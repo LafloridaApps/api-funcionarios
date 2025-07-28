@@ -96,4 +96,8 @@ public class Funcionario {
         this.ident = ident;
     }
 
+    public String getNombreCompleto(){
+        return this.nombres + " " + this.apellidoPaterno + " " + this.apellidoMaterno;  
+    }
+
 }

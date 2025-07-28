@@ -27,6 +27,8 @@ public class FuncionarioResponse {
         this.ident = builder.ident;
     }
 
+   
+
     public static class Builder {
         private Integer rut;
         private String nombre;
