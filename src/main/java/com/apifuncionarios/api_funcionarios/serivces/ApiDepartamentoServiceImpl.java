@@ -20,12 +20,12 @@ public class ApiDepartamentoServiceImpl implements ApiDepartamentoService {
     }
 
     @Override
-    public DepartamentoResponse obtenerDetalleDepartamentoByCodigoEx(String codEx) {
+    public DepartamentoResponse obtenerDetalleDepartamentoByCodigoEx(String codex) {
         return webClient
                 .get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/api/departamentos/codex")
-                        .queryParam("codEx", codEx)
+                        .queryParam("codex", codex)
                         .build())
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.empty())

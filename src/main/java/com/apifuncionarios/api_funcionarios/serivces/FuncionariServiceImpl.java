@@ -17,13 +17,14 @@ import com.apifuncionarios.api_funcionarios.utils.RepositoryUtils;
 public class FuncionariServiceImpl implements FuncionarioService {
 
     private final ApiFuncionarioService apiFuncionarioService;
-
     private final FuncionarioRepository funcionarioRepository;
-
     private final ApiDepartamentoService apiDepartamentoService;
 
+    private static final String ERROR_MESSAGE = "No se encontro el funcionario en la base de datos municipalidad %d";
+
     public FuncionariServiceImpl(ApiFuncionarioService apiFuncionarioService,
-            FuncionarioRepository funcionarioRepository, ApiDepartamentoService apiDepartamentoService) {
+                                 FuncionarioRepository funcionarioRepository,
+                                 ApiDepartamentoService apiDepartamentoService) {
         this.apiFuncionarioService = apiFuncionarioService;
         this.funcionarioRepository = funcionarioRepository;
         this.apiDepartamentoService = apiDepartamentoService;
@@ -31,25 +32,31 @@ public class FuncionariServiceImpl implements FuncionarioService {
 
     @Override
     public FuncionarioResponse getFuncionarioInfo(Integer rut) {
-
         ApiFuncionarioResponse response = apiFuncionarioService.obtenerDetalleColaborador(rut);
 
         if (response == null) {
             throw new FuncionarioException("No se encontro el funcionario en la base de datos municipalidad");
         }
 
-        Funcionario funcionario = funcionarioRepository.findByRut(rut).orElseGet(() -> createFuncionario(response));
+        Funcionario funcionario = funcionarioRepository.findByRut(rut)
+                .orElseGet(() -> createFuncionario(response));
 
         DepartamentoResponse depto = apiDepartamentoService
                 .obtenerDetalleDepartamentoByCodigoEx(response.getCodDeptoExt());
 
+        boolean updated = false;
+
         if (funcionario.getIdDepto() == null && depto != null) {
             funcionario.setIdDepto(depto.getId());
-            funcionarioRepository.save(funcionario);
+            updated = true;
         }
 
         if (funcionario.getIdent() != response.getIdent() && response.getIdent() != 0) {
             funcionario.setIdent(response.getIdent());
+            updated = true;
+        }
+
+        if (updated) {
             funcionarioRepository.save(funcionario);
         }
 
@@ -58,11 +65,9 @@ public class FuncionariServiceImpl implements FuncionarioService {
         funcionarioResponse.setIdent(response.getIdent());
 
         return funcionarioResponse;
-
     }
 
     private Funcionario createFuncionario(ApiFuncionarioResponse request) {
-
         Funcionario funcionario = new Funcionario();
 
         funcionario.setRut(request.getRut());
@@ -73,22 +78,31 @@ public class FuncionariServiceImpl implements FuncionarioService {
         funcionario.setVrut(request.getVrut().charAt(0));
 
         return funcionarioRepository.save(funcionario);
-
     }
 
     private FuncionarioResponse getFuncionarioByRut(Integer rut) {
+        Funcionario funcionario = RepositoryUtils.findOrThrow(
+                funcionarioRepository.findByRut(rut),
+                String.format(ERROR_MESSAGE, rut)
+        );
 
-        Funcionario funcionario = RepositoryUtils.findOrThrow(funcionarioRepository.findByRut(rut),
-                String.format("No se encontro el funcionario con el rut %d", rut));
-
-        DepartamentoResponse depto = apiDepartamentoService.obtenerDetalleDepartamentoById(funcionario.getIdDepto());
+        DepartamentoResponse depto = apiDepartamentoService
+                .obtenerDetalleDepartamentoById(funcionario.getIdDepto());
 
         Funcionario jefeDepto = new Funcionario();
 
         if (depto.getRutJefe() != null) {
-            jefeDepto = RepositoryUtils.findOrThrow(funcionarioRepository.findByRut(depto.getRutJefe()),
-                    String.format("No se encontro el funcionario con el rut %d", rut));
+            jefeDepto = RepositoryUtils.findOrThrow(
+                    funcionarioRepository.findByRut(depto.getRutJefe()),
+                    String.format(ERROR_MESSAGE, rut)
+            );
+        }
 
+        if (depto.getRutJefe().equals(funcionario.getRut())) {
+            jefeDepto = RepositoryUtils.findOrThrow(
+                    funcionarioRepository.findByRut(depto.getRutJefeSuperior()),
+                    String.format(ERROR_MESSAGE, rut)
+            );
         }
 
         return new FuncionarioResponse.Builder()
@@ -97,11 +111,9 @@ public class FuncionariServiceImpl implements FuncionarioService {
                 .vrut(Character.toString(funcionario.getVrut()))
                 .codDepto(funcionario.getIdDepto())
                 .departamento(depto.getNombre())
-                .nombreJefe(jefeDepto.getRut() != null ? "" : jefeDepto.getNombreCompleto( ))
+                .nombreJefe(jefeDepto.getRut() != null ? jefeDepto.getNombreCompleto() : "")
                 .codDeptoJefe(jefeDepto.getIdDepto())
                 .email(funcionario.getEmail())
                 .build();
-
     }
-
 }

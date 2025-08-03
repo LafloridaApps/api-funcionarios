@@ -5,6 +5,24 @@ public class DepartamentoResponse {
     private Long id;
     private String nombre;
     private Integer rutJefe;
+    private Integer rutJefeSuperior;
+    private Long idDeptoSuperior;
+
+    public Integer getRutJefeSuperior() {
+        return rutJefeSuperior;
+    }
+
+    public void setRutJefeSuperior(Integer rutJefeSuperior) {
+        this.rutJefeSuperior = rutJefeSuperior;
+    }
+
+    public Long getIdDeptoSuperior() {
+        return idDeptoSuperior;
+    }
+
+    public void setIdDeptoSuperior(Long idDeptoSuperior) {
+        this.idDeptoSuperior = idDeptoSuperior;
+    }
 
     public DepartamentoResponse(Long id, String nombre, Integer rutJefe) {
         this.id = id;
