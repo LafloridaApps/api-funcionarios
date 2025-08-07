@@ -107,6 +107,8 @@ public class FuncionariServiceImpl implements FuncionarioService {
 
         return new FuncionarioResponse.Builder()
                 .nombre(funcionario.getNombres())
+                .apellidoPaterno(funcionario.getApellidoPaterno())
+                .apellidoMaterno(funcionario.getApellidoMaterno())
                 .rut(funcionario.getRut())
                 .vrut(Character.toString(funcionario.getVrut()))
                 .codDepto(funcionario.getIdDepto())

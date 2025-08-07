@@ -5,6 +5,8 @@ public class FuncionarioResponse {
 
     private Integer rut;
     private String nombre;
+    private String apellidoPaterno;
+    private String apellidoMaterno;
     private String vrut;
     private String email;
     private String departamento;
@@ -25,6 +27,8 @@ public class FuncionarioResponse {
         this.codDeptoJefe = builder.codDeptoJefe;
         this.foto=builder.foto;
         this.ident = builder.ident;
+        this.apellidoMaterno = builder.apellidoMaterno;
+        this.apellidoPaterno = builder.apellidoPaterno;
     }
 
    
@@ -32,6 +36,8 @@ public class FuncionarioResponse {
     public static class Builder {
         private Integer rut;
         private String nombre;
+         private String apellidoPaterno;
+    private String apellidoMaterno;
         private String vrut;
         private String email;
         private String departamento;
@@ -92,6 +98,16 @@ public class FuncionarioResponse {
 
         public FuncionarioResponse build() {
             return new FuncionarioResponse(this);
+        }
+
+        public Builder apellidoPaterno(String apellidoPaterno) {
+            this.apellidoPaterno = apellidoPaterno;
+            return this;
+        }
+
+        public Builder apellidoMaterno(String apellidoMaterno) {
+            this.apellidoMaterno = apellidoMaterno;
+            return this;
         }
     }
 
@@ -173,5 +189,21 @@ public class FuncionarioResponse {
 
     public void setIdent(Integer ident) {
         this.ident = ident;
+ 
+    }
+    public String getApellidoPaterno() {
+        return this.apellidoPaterno;
+    }
+
+    public void setApellidoPaterno(String apellidoPaterno) {
+        this.apellidoPaterno = apellidoPaterno;
+    }
+
+    public String getApellidoMaterno() {
+        return this.apellidoMaterno;
+    }
+
+    public void setApellidoMaterno(String apellidoMaterno) {
+        this.apellidoMaterno = apellidoMaterno;
     }
 }
