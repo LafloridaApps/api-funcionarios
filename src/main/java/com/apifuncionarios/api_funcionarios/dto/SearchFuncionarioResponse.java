@@ -2,6 +2,8 @@ package com.apifuncionarios.api_funcionarios.dto;
 
 import java.util.List;
 
+import com.apifuncionarios.api_funcionarios.entities.Funcionario;
+
 public class SearchFuncionarioResponse {
 
     private int currentPage;
@@ -9,8 +11,7 @@ public class SearchFuncionarioResponse {
     private int totalItems;
     private Long size;
 
-    
-    List<FuncionarioResponse> funcionarios;
+    List<Funcionario> funcionarios;
 
     public int getCurrentPage() {
         return currentPage;
@@ -19,8 +20,6 @@ public class SearchFuncionarioResponse {
     public void setCurrentPage(int currentPage) {
         this.currentPage = currentPage;
     }
-
-
 
     public int getTotalPages() {
         return totalPages;
@@ -38,20 +37,20 @@ public class SearchFuncionarioResponse {
         this.totalItems = totalItems;
     }
 
-    public List<FuncionarioResponse> getFuncionarios() {
-        return funcionarios;
-    }
-
-    public void setFuncionarios(List<FuncionarioResponse> funcionarios) {
-        this.funcionarios = funcionarios;
-    }
-
     public Long getSize() {
         return size;
     }
 
     public void setSize(Long size) {
         this.size = size;
+    }
+
+    public List<Funcionario> getFuncionarios() {
+        return funcionarios;
+    }
+
+    public void setFuncionarios(List<Funcionario> funcionarios) {
+        this.funcionarios = funcionarios;
     }
 
 }
