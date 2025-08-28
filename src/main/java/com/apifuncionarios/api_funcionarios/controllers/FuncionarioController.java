@@ -28,6 +28,8 @@ public class FuncionarioController {
     @GetMapping
     public ResponseEntity<Object> obtenerDetalleColaborador(@RequestParam Integer rut) {
 
+        
+
         return ResponseEntity.ok(funcionarioService.getFuncionarioInfo(rut));
     }
 

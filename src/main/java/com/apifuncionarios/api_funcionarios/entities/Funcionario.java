@@ -21,8 +21,21 @@ public class Funcionario {
     private String email;
     private Character vrut;
     private Integer ident;
+    private String tipoContrato;
 
     private Long idDepto;
+
+    public void setIdent(Integer ident) {
+        this.ident = ident;
+    }
+
+    public String getTipoContrato() {
+        return tipoContrato;
+    }
+
+    public void setTipoContrato(String tipoContrato) {
+        this.tipoContrato = tipoContrato;
+    }
 
     public String getNombres() {
         return nombres;
@@ -96,8 +109,8 @@ public class Funcionario {
         this.ident = ident;
     }
 
-    public String getNombreCompleto(){
-        return this.nombres + " " + this.apellidoPaterno + " " + this.apellidoMaterno;  
+    public String getNombreCompleto() {
+        return this.nombres + " " + this.apellidoPaterno + " " + this.apellidoMaterno;
     }
 
 }

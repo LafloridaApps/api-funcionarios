@@ -13,19 +13,20 @@ import reactor.core.publisher.Mono;
 @Service
 public class ApiFuncionarioServiceImpl implements ApiFuncionarioService {
 
-     private final WebClient webClient;
+    private final WebClient webClient;
 
     public ApiFuncionarioServiceImpl(WebClient.Builder webClientBuilder, ApiProperties apiProperties) {
-        this.webClient = webClientBuilder.baseUrl(apiProperties.getFuncionarioUrl()).build();
+        this.webClient = webClientBuilder.baseUrl(apiProperties.getFuncionarioSmcUrl()).build();
     }
 
     @Override
     public ApiFuncionarioResponse obtenerDetalleColaborador(Integer rut) {
-          return webClient.get()
+        return webClient.get()
                 .uri("/api/funcionario/{rut}", rut)
                 .retrieve()
                 .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.empty())
                 .bodyToMono(ApiFuncionarioResponse.class)
+               
                 .onErrorResume(Exception.class, e -> Mono.empty())
                 .block();
     }

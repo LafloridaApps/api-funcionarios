@@ -14,7 +14,7 @@ import com.apifuncionarios.api_funcionarios.serivces.interfaces.FuncionarioServi
 import com.apifuncionarios.api_funcionarios.utils.RepositoryUtils;
 
 @Service
-public class FuncionariServiceImpl implements FuncionarioService {
+public class FuncionarioServiceImpl implements FuncionarioService {
 
     private final ApiFuncionarioService apiFuncionarioService;
     private final FuncionarioRepository funcionarioRepository;
@@ -22,7 +22,7 @@ public class FuncionariServiceImpl implements FuncionarioService {
 
     private static final String ERROR_MESSAGE = "No se encontro el funcionario en la base de datos municipalidad %d";
 
-    public FuncionariServiceImpl(ApiFuncionarioService apiFuncionarioService,
+    public FuncionarioServiceImpl(ApiFuncionarioService apiFuncionarioService,
                                  FuncionarioRepository funcionarioRepository,
                                  ApiDepartamentoService apiDepartamentoService) {
         this.apiFuncionarioService = apiFuncionarioService;
@@ -32,7 +32,10 @@ public class FuncionariServiceImpl implements FuncionarioService {
 
     @Override
     public FuncionarioResponse getFuncionarioInfo(Integer rut) {
+
+        
         ApiFuncionarioResponse response = apiFuncionarioService.obtenerDetalleColaborador(rut);
+        
 
         if (response == null) {
             throw new FuncionarioException("No se encontro el funcionario en la base de datos municipalidad");
@@ -43,6 +46,10 @@ public class FuncionariServiceImpl implements FuncionarioService {
 
         DepartamentoResponse depto = apiDepartamentoService
                 .obtenerDetalleDepartamentoByCodigoEx(response.getCodDeptoExt());
+        
+                if (depto == null) {
+                    throw new FuncionarioException("No se encontro el departamento en la base de datos municipalidad");
+                }
 
         boolean updated = false;
 
@@ -55,6 +62,8 @@ public class FuncionariServiceImpl implements FuncionarioService {
             funcionario.setIdent(response.getIdent());
             updated = true;
         }
+
+     
 
         if (updated) {
             funcionarioRepository.save(funcionario);
@@ -76,6 +85,7 @@ public class FuncionariServiceImpl implements FuncionarioService {
         funcionario.setApellidoMaterno(request.getMaterno());
         funcionario.setEmail(request.getEmail());
         funcionario.setVrut(request.getVrut().charAt(0));
+        
 
         return funcionarioRepository.save(funcionario);
     }

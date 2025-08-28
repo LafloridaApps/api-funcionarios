@@ -13,6 +13,9 @@ public class ApiFuncionarioResponse {
     private String departamento;
     private String jefe;
     private int ident;
+    private String tipoContrato;
+
+    
 
     public Integer getRut() {
         return rut;
@@ -100,6 +103,14 @@ public class ApiFuncionarioResponse {
 
     public void setIdent(int ident) {
         this.ident = ident;
+    }
+
+    public String getTipoContrato() {
+        return tipoContrato;
+    }
+
+    public void setTipoContrato(String tipoContrato) {
+        this.tipoContrato = tipoContrato;
     }
 
 }
