@@ -63,11 +63,18 @@ public class FuncionarioServiceImpl implements FuncionarioService {
             updated = true;
         }
 
+        if (funcionario.getTipoContrato() == null
+                || !funcionario.getTipoContrato().equals(response.getTipoContrato())) {
+            funcionario.setTipoContrato(response.getTipoContrato());
+            updated = true;
+
+        }
+
         if (updated) {
             funcionarioRepository.save(funcionario);
         }
 
-        FuncionarioResponse funcionarioResponse = getFuncionarioByRut(funcionario.getRut());
+        FuncionarioResponse funcionarioResponse = getFuncionarioByRut(funcionario);
         funcionarioResponse.setFoto(response.getFoto());
         funcionarioResponse.setIdent(response.getIdent());
 
@@ -83,14 +90,12 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         funcionario.setApellidoMaterno(request.getMaterno());
         funcionario.setEmail(request.getEmail());
         funcionario.setVrut(request.getVrut().charAt(0));
+        funcionario.setTipoContrato(request.getTipoContrato());
 
         return funcionarioRepository.save(funcionario);
     }
 
-    private FuncionarioResponse getFuncionarioByRut(Integer rut) {
-        Funcionario funcionario = RepositoryUtils.findOrThrow(
-                funcionarioRepository.findByRut(rut),
-                String.format(ERROR_MESSAGE, rut));
+    private FuncionarioResponse getFuncionarioByRut(Funcionario funcionario) {
 
         DepartamentoResponse depto = apiDepartamentoService
                 .obtenerDetalleDepartamentoById(funcionario.getIdDepto());
@@ -100,13 +105,13 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         if (depto.getRutJefe() != null) {
             jefeDepto = RepositoryUtils.findOrThrow(
                     funcionarioRepository.findByRut(depto.getRutJefe()),
-                    String.format(ERROR_MESSAGE, rut));
+                    String.format(ERROR_MESSAGE, funcionario.getRut()));
         }
 
         if (depto.getRutJefe().equals(funcionario.getRut())) {
             jefeDepto = RepositoryUtils.findOrThrow(
                     funcionarioRepository.findByRut(depto.getRutJefeSuperior()),
-                    String.format(ERROR_MESSAGE, rut));
+                    String.format(ERROR_MESSAGE, funcionario.getRut()));
         }
 
         return new FuncionarioResponse.Builder()
@@ -120,6 +125,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
                 .nombreJefe(jefeDepto.getRut() != null ? jefeDepto.getNombreCompleto() : "")
                 .codDeptoJefe(jefeDepto.getIdDepto())
                 .email(funcionario.getEmail())
+                .tipoContrato(funcionario.getTipoContrato())
                 .build();
     }
 

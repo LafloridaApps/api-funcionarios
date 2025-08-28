@@ -15,6 +15,15 @@ public class FuncionarioResponse {
     private Long codDeptoJefe;
     private String foto;
     private Integer ident;
+    private String tipoContrato;
+
+    public String getTipoContrato() {
+        return tipoContrato;
+    }
+
+    public void setTipoContrato(String tipoContrato) {
+        this.tipoContrato = tipoContrato;
+    }
 
     private FuncionarioResponse(Builder builder) {
         this.rut = builder.rut;
@@ -29,6 +38,7 @@ public class FuncionarioResponse {
         this.ident = builder.ident;
         this.apellidoMaterno = builder.apellidoMaterno;
         this.apellidoPaterno = builder.apellidoPaterno;
+        this.tipoContrato = builder.tipoContrato;
     }
 
    
@@ -46,6 +56,7 @@ public class FuncionarioResponse {
         private Long codDeptoJefe;
         private String foto;
         private Integer ident;
+        private String tipoContrato;
 
         public Builder rut(Integer rut) {
             this.rut = rut;
@@ -107,6 +118,11 @@ public class FuncionarioResponse {
 
         public Builder apellidoMaterno(String apellidoMaterno) {
             this.apellidoMaterno = apellidoMaterno;
+            return this;
+        }
+
+        public Builder tipoContrato(String tipoContrato) {
+            this.tipoContrato = tipoContrato;
             return this;
         }
     }
