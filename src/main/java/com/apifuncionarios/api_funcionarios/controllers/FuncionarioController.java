@@ -28,16 +28,26 @@ public class FuncionarioController {
     @GetMapping
     public ResponseEntity<Object> obtenerDetalleColaborador(@RequestParam Integer rut) {
 
-        
-
         return ResponseEntity.ok(funcionarioService.getFuncionarioInfo(rut));
     }
 
     @GetMapping("/search")
     public ResponseEntity<Object> obtenerColaboradoresByName(@RequestParam String pattern,
-    @RequestParam int pageNumber) {
+            @RequestParam int pageNumber) {
 
-        return ResponseEntity.ok(searchFuncionarioService.searchByName(pattern,pageNumber));
+        return ResponseEntity.ok(searchFuncionarioService.searchByName(pattern, pageNumber));
+    }
+
+    @GetMapping("/feriados")
+    public ResponseEntity<Object> obtenerDetalleFeriados(@RequestParam Integer rut, @RequestParam Integer ident) {
+
+        return ResponseEntity.ok(funcionarioService.resumenFeriadosLegales(rut, ident));
+    }
+
+     @GetMapping("/administrativos")
+    public ResponseEntity<Object> obtenerAdministrativos(@RequestParam Integer rut, @RequestParam Integer ident) {
+
+        return ResponseEntity.ok(funcionarioService.resumenAdm(rut, ident));
     }
 
 }

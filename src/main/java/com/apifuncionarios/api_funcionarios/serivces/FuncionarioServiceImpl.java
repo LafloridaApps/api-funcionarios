@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse;
 import com.apifuncionarios.api_funcionarios.dto.DepartamentoResponse;
 import com.apifuncionarios.api_funcionarios.dto.FuncionarioResponse;
+import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;
+import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
 import com.apifuncionarios.api_funcionarios.entities.Funcionario;
 import com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException;
 import com.apifuncionarios.api_funcionarios.repositories.FuncionarioRepository;
@@ -23,8 +25,8 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     private static final String ERROR_MESSAGE = "No se encontro el funcionario en la base de datos municipalidad %d";
 
     public FuncionarioServiceImpl(ApiFuncionarioService apiFuncionarioService,
-                                 FuncionarioRepository funcionarioRepository,
-                                 ApiDepartamentoService apiDepartamentoService) {
+            FuncionarioRepository funcionarioRepository,
+            ApiDepartamentoService apiDepartamentoService) {
         this.apiFuncionarioService = apiFuncionarioService;
         this.funcionarioRepository = funcionarioRepository;
         this.apiDepartamentoService = apiDepartamentoService;
@@ -33,9 +35,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     @Override
     public FuncionarioResponse getFuncionarioInfo(Integer rut) {
 
-        
         ApiFuncionarioResponse response = apiFuncionarioService.obtenerDetalleColaborador(rut);
-        
 
         if (response == null) {
             throw new FuncionarioException("No se encontro el funcionario en la base de datos municipalidad");
@@ -46,14 +46,14 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 
         DepartamentoResponse depto = apiDepartamentoService
                 .obtenerDetalleDepartamentoByCodigoEx(response.getCodDeptoExt());
-        
-                if (depto == null) {
-                    throw new FuncionarioException("No se encontro el departamento en la base de datos municipalidad");
-                }
+
+        if (depto == null) {
+            throw new FuncionarioException("No se encontro el departamento en la base de datos municipalidad");
+        }
 
         boolean updated = false;
 
-        if (funcionario.getIdDepto() == null && depto != null) {
+        if (funcionario.getIdDepto() == null) {
             funcionario.setIdDepto(depto.getId());
             updated = true;
         }
@@ -62,8 +62,6 @@ public class FuncionarioServiceImpl implements FuncionarioService {
             funcionario.setIdent(response.getIdent());
             updated = true;
         }
-
-     
 
         if (updated) {
             funcionarioRepository.save(funcionario);
@@ -85,7 +83,6 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         funcionario.setApellidoMaterno(request.getMaterno());
         funcionario.setEmail(request.getEmail());
         funcionario.setVrut(request.getVrut().charAt(0));
-        
 
         return funcionarioRepository.save(funcionario);
     }
@@ -93,8 +90,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     private FuncionarioResponse getFuncionarioByRut(Integer rut) {
         Funcionario funcionario = RepositoryUtils.findOrThrow(
                 funcionarioRepository.findByRut(rut),
-                String.format(ERROR_MESSAGE, rut)
-        );
+                String.format(ERROR_MESSAGE, rut));
 
         DepartamentoResponse depto = apiDepartamentoService
                 .obtenerDetalleDepartamentoById(funcionario.getIdDepto());
@@ -104,15 +100,13 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         if (depto.getRutJefe() != null) {
             jefeDepto = RepositoryUtils.findOrThrow(
                     funcionarioRepository.findByRut(depto.getRutJefe()),
-                    String.format(ERROR_MESSAGE, rut)
-            );
+                    String.format(ERROR_MESSAGE, rut));
         }
 
         if (depto.getRutJefe().equals(funcionario.getRut())) {
             jefeDepto = RepositoryUtils.findOrThrow(
                     funcionarioRepository.findByRut(depto.getRutJefeSuperior()),
-                    String.format(ERROR_MESSAGE, rut)
-            );
+                    String.format(ERROR_MESSAGE, rut));
         }
 
         return new FuncionarioResponse.Builder()
@@ -127,5 +121,15 @@ public class FuncionarioServiceImpl implements FuncionarioService {
                 .codDeptoJefe(jefeDepto.getIdDepto())
                 .email(funcionario.getEmail())
                 .build();
+    }
+
+    @Override
+    public ResumenFeriadoLegal resumenFeriadosLegales(Integer rut, Integer ident) {
+        return apiFuncionarioService.obtenerFeriadosLegales(rut, ident);
+    }
+
+    @Override
+    public ResumenAdm resumenAdm(Integer rut, Integer ident) {
+        return apiFuncionarioService.obtenerAdministrativos(rut, ident);
     }
 }
