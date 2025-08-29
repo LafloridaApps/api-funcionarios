@@ -1,14 +1,19 @@
-package com.apifuncionarios.api_funcionarios.serivces;
+package com.apifuncionarios.api_funcionarios.services;
+
+import java.time.Duration;
 
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 import com.apifuncionarios.api_funcionarios.dto.DepartamentoResponse;
-import com.apifuncionarios.api_funcionarios.serivces.interfaces.ApiDepartamentoService;
+import com.apifuncionarios.api_funcionarios.services.interfaces.ApiDepartamentoService;
 
+import io.netty.channel.ChannelOption;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 @Service
 public class ApiDepartamentoServiceImpl implements ApiDepartamentoService {
@@ -16,7 +21,14 @@ public class ApiDepartamentoServiceImpl implements ApiDepartamentoService {
     private final WebClient webClient;
 
     public ApiDepartamentoServiceImpl(WebClient.Builder webClientBuilder, ApiProperties apiProperties) {
-        this.webClient = webClientBuilder.baseUrl(apiProperties.getDepartamentoUrl()).build();
+        HttpClient httpClient = HttpClient.create()
+                .responseTimeout(Duration.ofSeconds(10))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
+                
+        this.webClient = webClientBuilder
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl(apiProperties.getDepartamentoUrl())
+                .build();
     }
 
     @Override

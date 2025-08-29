@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.apifuncionarios.api_funcionarios.serivces.interfaces.FuncionarioService;
-import com.apifuncionarios.api_funcionarios.serivces.interfaces.SearchFuncionarioService;
+import com.apifuncionarios.api_funcionarios.services.interfaces.FuncionarioService;
+import com.apifuncionarios.api_funcionarios.services.interfaces.SearchFuncionarioService;
 
 @RestController
 @RequestMapping("/api/funcionario")

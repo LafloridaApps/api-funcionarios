@@ -1,4 +1,4 @@
-package com.apifuncionarios.api_funcionarios.serivces.interfaces;
+package com.apifuncionarios.api_funcionarios.services.interfaces;
 
 import com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse;
 import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;

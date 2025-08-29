@@ -1,4 +1,4 @@
-package com.apifuncionarios.api_funcionarios.serivces;
+package com.apifuncionarios.api_funcionarios.services;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 import com.apifuncionarios.api_funcionarios.dto.SearchFuncionarioResponse;
 import com.apifuncionarios.api_funcionarios.entities.Funcionario;
 import com.apifuncionarios.api_funcionarios.repositories.FuncionarioRepository;
-import com.apifuncionarios.api_funcionarios.serivces.interfaces.SearchFuncionarioService;
+import com.apifuncionarios.api_funcionarios.services.interfaces.SearchFuncionarioService;
 
 @Service
 public class SearchFuncionarioServiceImpl implements SearchFuncionarioService {

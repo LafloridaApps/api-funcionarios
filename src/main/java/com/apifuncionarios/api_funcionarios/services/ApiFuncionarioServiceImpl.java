@@ -1,6 +1,9 @@
-package com.apifuncionarios.api_funcionarios.serivces;
+package com.apifuncionarios.api_funcionarios.services;
+
+import java.time.Duration;
 
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.client.reactive.ReactorClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -8,9 +11,11 @@ import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 import com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse;
 import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;
 import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
-import com.apifuncionarios.api_funcionarios.serivces.interfaces.ApiFuncionarioService;
+import com.apifuncionarios.api_funcionarios.services.interfaces.ApiFuncionarioService;
 
+import io.netty.channel.ChannelOption;
 import reactor.core.publisher.Mono;
+import reactor.netty.http.client.HttpClient;
 
 @Service
 public class ApiFuncionarioServiceImpl implements ApiFuncionarioService {
@@ -18,7 +23,14 @@ public class ApiFuncionarioServiceImpl implements ApiFuncionarioService {
     private final WebClient webClient;
 
     public ApiFuncionarioServiceImpl(WebClient.Builder webClientBuilder, ApiProperties apiProperties) {
-        this.webClient = webClientBuilder.baseUrl(apiProperties.getFuncionarioSmcUrl()).build();
+        HttpClient httpClient = HttpClient.create()
+                .responseTimeout(Duration.ofSeconds(5))
+                .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 10000);
+
+        this.webClient = webClientBuilder
+                .clientConnector(new ReactorClientHttpConnector(httpClient))
+                .baseUrl(apiProperties.getFuncionarioSmcUrl())
+                .build();
     }
 
     @Override
