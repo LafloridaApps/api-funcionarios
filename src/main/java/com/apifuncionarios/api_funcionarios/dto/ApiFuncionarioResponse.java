@@ -14,8 +14,24 @@ public class ApiFuncionarioResponse {
     private String jefe;
     private int ident;
     private String tipoContrato;
+    private String escalafon;
+    private int grado;
 
-    
+    public String getEscalafon() {
+        return escalafon;
+    }
+
+    public void setEscalafon(String escalafon) {
+        this.escalafon = escalafon;
+    }
+
+    public int getGrado() {
+        return grado;
+    }
+
+    public void setGrado(int grado) {
+        this.grado = grado;
+    }
 
     public Integer getRut() {
         return rut;

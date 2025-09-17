@@ -1,6 +1,5 @@
 package com.apifuncionarios.api_funcionarios.dto;
 
-
 public class FuncionarioResponse {
 
     private Integer rut;
@@ -16,14 +15,8 @@ public class FuncionarioResponse {
     private String foto;
     private Integer ident;
     private String tipoContrato;
-
-    public String getTipoContrato() {
-        return tipoContrato;
-    }
-
-    public void setTipoContrato(String tipoContrato) {
-        this.tipoContrato = tipoContrato;
-    }
+    private String escalafon;
+    private int grado;
 
     private FuncionarioResponse(Builder builder) {
         this.rut = builder.rut;
@@ -34,20 +27,20 @@ public class FuncionarioResponse {
         this.codDepto = builder.codDepto;
         this.nombreJefe = builder.nombreJefe;
         this.codDeptoJefe = builder.codDeptoJefe;
-        this.foto=builder.foto;
+        this.foto = builder.foto;
         this.ident = builder.ident;
         this.apellidoMaterno = builder.apellidoMaterno;
         this.apellidoPaterno = builder.apellidoPaterno;
         this.tipoContrato = builder.tipoContrato;
+        this.escalafon = builder.escalafon;
+        this.grado = builder.grado;
     }
-
-   
 
     public static class Builder {
         private Integer rut;
         private String nombre;
-         private String apellidoPaterno;
-    private String apellidoMaterno;
+        private String apellidoPaterno;
+        private String apellidoMaterno;
         private String vrut;
         private String email;
         private String departamento;
@@ -57,6 +50,8 @@ public class FuncionarioResponse {
         private String foto;
         private Integer ident;
         private String tipoContrato;
+        private String escalafon;
+        private int grado;
 
         public Builder rut(Integer rut) {
             this.rut = rut;
@@ -101,7 +96,8 @@ public class FuncionarioResponse {
         public Builder foto(String foto) {
             this.foto = foto;
             return this;
-        }   
+        }
+
         public Builder ident(Integer ident) {
             this.ident = ident;
             return this;
@@ -123,6 +119,16 @@ public class FuncionarioResponse {
 
         public Builder tipoContrato(String tipoContrato) {
             this.tipoContrato = tipoContrato;
+            return this;
+        }
+
+        public Builder escalafon(String escalafon) {
+            this.escalafon = escalafon;
+            return this;
+        }
+
+        public Builder grado(int grado) {
+            this.grado = grado;
             return this;
         }
     }
@@ -205,8 +211,9 @@ public class FuncionarioResponse {
 
     public void setIdent(Integer ident) {
         this.ident = ident;
- 
+
     }
+
     public String getApellidoPaterno() {
         return this.apellidoPaterno;
     }
@@ -222,4 +229,29 @@ public class FuncionarioResponse {
     public void setApellidoMaterno(String apellidoMaterno) {
         this.apellidoMaterno = apellidoMaterno;
     }
+
+    public String getEscalafon() {
+        return escalafon;
+    }
+
+    public void setEscalafon(String escalafon) {
+        this.escalafon = escalafon;
+    }
+
+    public int getGrado() {
+        return grado;
+    }
+
+    public void setGrado(int grado) {
+        this.grado = grado;
+    }
+
+    public String getTipoContrato() {
+        return tipoContrato;
+    }
+
+    public void setTipoContrato(String tipoContrato) {
+        this.tipoContrato = tipoContrato;
+    }
+
 }

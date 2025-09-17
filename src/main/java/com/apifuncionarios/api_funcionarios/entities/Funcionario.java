@@ -22,6 +22,8 @@ public class Funcionario {
     private Character vrut;
     private Integer ident;
     private String tipoContrato;
+    private String escalafon;
+    private int grado;
 
     private Long idDepto;
 
@@ -113,4 +115,19 @@ public class Funcionario {
         return this.nombres + " " + this.apellidoPaterno + " " + this.apellidoMaterno;
     }
 
+    public String getEscalafon() {
+        return escalafon;
+    }
+
+    public void setEscalafon(String escalafon) {
+        this.escalafon = escalafon;
+    }
+
+    public int getGrado() {
+        return grado;
+    }
+
+    public void setGrado(int grado) {
+        this.grado = grado;
+    }
 }

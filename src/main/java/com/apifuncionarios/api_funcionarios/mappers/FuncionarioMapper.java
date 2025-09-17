@@ -22,8 +22,10 @@ public class FuncionarioMapper {
         funcionario.setApellidoPaterno(dto.getPaterno());
         funcionario.setApellidoMaterno(dto.getMaterno());
         funcionario.setEmail(dto.getEmail());
-        funcionario.setTipoContrato(dto.getTipoContrato());
+        funcionario.setTipoContrato(dto.getTipoContrato().trim());
         funcionario.setIdent(dto.getIdent());
+        funcionario.setEscalafon(dto.getEscalafon().trim());
+        funcionario.setGrado(dto.getGrado());
         return funcionario;
     }
 
@@ -31,9 +33,11 @@ public class FuncionarioMapper {
         if (dto == null || entity == null || depto == null) {
             return;
         }
-        entity.setTipoContrato(dto.getTipoContrato());
+        entity.setTipoContrato(dto.getTipoContrato().trim());
         entity.setIdent(dto.getIdent());
         entity.setIdDepto(depto.getId());
+        entity.setEscalafon(dto.getEscalafon().trim());
+        entity.setGrado(dto.getGrado());
     }
 
     public FuncionarioResponse toResponseDto(Funcionario entity, DepartamentoResponse depto, Funcionario jefe, String foto) {
@@ -57,9 +61,11 @@ public class FuncionarioMapper {
                 .nombreJefe(nombreJefe)
                 .codDeptoJefe(codDeptoJefe)
                 .email(entity.getEmail())
-                .tipoContrato(entity.getTipoContrato())
+                .tipoContrato(entity.getTipoContrato().trim())
                 .foto(foto)
                 .ident(entity.getIdent())
+                .escalafon(entity.getEscalafon().trim())
+                .grado(entity.getGrado())
                 .build();
     }
 }
