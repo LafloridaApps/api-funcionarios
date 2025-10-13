@@ -9,6 +9,7 @@ import org.springframework.web.reactive.function.client.WebClient;
 
 import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 import com.apifuncionarios.api_funcionarios.dto.DepartamentoResponse;
+import com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException;
 import com.apifuncionarios.api_funcionarios.services.interfaces.ApiDepartamentoService;
 
 import io.netty.channel.ChannelOption;
@@ -40,9 +41,9 @@ public class ApiDepartamentoServiceImpl implements ApiDepartamentoService {
                         .queryParam("codex", codex)
                         .build())
                 .retrieve()
-                .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.empty())
+                .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.error(new FuncionarioException("Departamento no encontrado para el código externo: " + codex)))
                 .bodyToMono(DepartamentoResponse.class)
-                .onErrorResume(Exception.class, e -> Mono.empty())
+                .onErrorResume(e -> Mono.error(new FuncionarioException("Error al contactar el servicio de departamentos: " + e.getMessage())))
                 .block();
     }
 

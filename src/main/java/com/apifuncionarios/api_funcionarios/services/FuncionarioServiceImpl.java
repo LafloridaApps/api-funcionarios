@@ -78,14 +78,20 @@ public class FuncionarioServiceImpl implements FuncionarioService {
             logger.warn("No se pudo obtener el detalle del departamento desde el servicio externo.", e);
         }
 
-        Funcionario jefeDepto = new Funcionario();
-        if (depto != null && depto.getRutJefe() != null) {
-            if (depto.getRutJefe().equals(funcionario.getRut())) {
-                jefeDepto = funcionarioRepository.findByRut(depto.getRutJefeSuperior()).orElse(new Funcionario());
-            } else {
-                jefeDepto = funcionarioRepository.findByRut(depto.getRutJefe()).orElse(new Funcionario());
+        Funcionario jefeDepto = null; // Initialize to null
+        if (depto != null) {
+            if (depto.getRutJefe() != null) {
+                if (depto.getRutJefe().equals(funcionario.getRut())) {
+                    jefeDepto = funcionarioRepository.findByRut(depto.getRutJefeSuperior()).orElse(null); // Use null instead of new Funcionario()
+                } else {
+                    jefeDepto = funcionarioRepository.findByRut(depto.getRutJefe()).orElse(null); // Use null instead of new Funcionario()
+                }
+            } else if (depto.getRutJefeSuperior() != null) { // Added check for depto.getRutJefeSuperior()
+                jefeDepto = funcionarioRepository.findByRut(depto.getRutJefeSuperior()).orElse(null); // Use null instead of new Funcionario()
             }
         }
+        // If jefeDepto is still null, it means no chief was found or depto was null.
+        // The mapper should handle null jefeDepto gracefully.
 
         return funcionarioMapper.toResponseDto(funcionario, depto, jefeDepto, foto);
     }

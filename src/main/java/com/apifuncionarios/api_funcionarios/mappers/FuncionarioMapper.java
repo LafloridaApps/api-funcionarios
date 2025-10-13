@@ -30,12 +30,18 @@ public class FuncionarioMapper {
     }
 
     public void updateEntityFromDto(Funcionario entity, ApiFuncionarioResponse dto, DepartamentoResponse depto) {
-        if (dto == null || entity == null || depto == null) {
+        if (dto == null || entity == null) {
             return;
         }
+        entity.setNombres(dto.getNombres());
+        entity.setApellidoPaterno(dto.getPaterno());
+        entity.setApellidoMaterno(dto.getMaterno());
+        entity.setEmail(dto.getEmail());
         entity.setTipoContrato(dto.getTipoContrato().trim());
         entity.setIdent(dto.getIdent());
-        entity.setIdDepto(depto.getId());
+        if (depto != null) {
+            entity.setIdDepto(depto.getId());
+        }
         entity.setEscalafon(dto.getEscalafon().trim());
         entity.setGrado(dto.getGrado());
     }
