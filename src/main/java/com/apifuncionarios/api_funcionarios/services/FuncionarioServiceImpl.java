@@ -18,6 +18,7 @@ import com.apifuncionarios.api_funcionarios.services.interfaces.ApiFuncionarioSe
 import com.apifuncionarios.api_funcionarios.services.interfaces.FuncionarioService;
 import com.apifuncionarios.api_funcionarios.services.sync.ISincronizacionService;
 import com.apifuncionarios.api_funcionarios.utils.RepositoryUtils;
+import java.util.Optional;
 
 @Service
 public class FuncionarioServiceImpl implements FuncionarioService {
@@ -69,31 +70,104 @@ public class FuncionarioServiceImpl implements FuncionarioService {
                 String.format(NOT_FOUND_MESSAGE, rut));
         return buildFuncionarioResponse(funcionario, null);
     }
-
     private FuncionarioResponse buildFuncionarioResponse(Funcionario funcionario, String foto) {
-        DepartamentoResponse depto = null;
-        try {
-            depto = apiDepartamentoService.obtenerDetalleDepartamentoById(funcionario.getIdDepto());
-        } catch (Exception e) {
-            logger.warn("No se pudo obtener el detalle del departamento desde el servicio externo.", e);
+        if (funcionario == null) {
+            throw new NotFounException("Funcionario nulo al construir la respuesta");
         }
 
-        Funcionario jefeDepto = null; // Initialize to null
-        if (depto != null) {
-            if (depto.getRutJefe() != null) {
-                if (depto.getRutJefe().equals(funcionario.getRut())) {
-                    jefeDepto = funcionarioRepository.findByRut(depto.getRutJefeSuperior()).orElse(null); // Use null instead of new Funcionario()
-                } else {
-                    jefeDepto = funcionarioRepository.findByRut(depto.getRutJefe()).orElse(null); // Use null instead of new Funcionario()
-                }
-            } else if (depto.getRutJefeSuperior() != null) { // Added check for depto.getRutJefeSuperior()
-                jefeDepto = funcionarioRepository.findByRut(depto.getRutJefeSuperior()).orElse(null); // Use null instead of new Funcionario()
+        DepartamentoResponse depto = null;
+        Long idDepto = funcionario.getIdDepto();
+        if (idDepto != null) {
+            try {
+                depto = apiDepartamentoService.obtenerDetalleDepartamentoById(idDepto);
+            } catch (Exception e) {
+                logger.warn("No se pudo obtener el detalle del departamento id={} para rut={}", idDepto,
+                        funcionario.getRut(), e);
             }
+        } else {
+            logger.debug("Funcionario rut={} no tiene idDepto definido", funcionario.getRut());
         }
-        // If jefeDepto is still null, it means no chief was found or depto was null.
-        // The mapper should handle null jefeDepto gracefully.
+
+        Funcionario jefeDepto = resolveJefeDepto(depto, funcionario.getRut());
 
         return funcionarioMapper.toResponseDto(funcionario, depto, jefeDepto, foto);
+    }
+
+    // Extrae la lógica de resolución del jefe de departamento para facilitar tests y legibilidad
+    Funcionario resolveJefeDepto(DepartamentoResponse depto, Integer rutFuncionario) {
+        if (depto == null) return null;
+
+        DepartamentoResponse current = depto;
+        final int maxHops = 20; // seguridad para evitar loops infinitos
+
+        for (int hops = 0; hops < maxHops; hops++) {
+
+            // Intentar resolver en el departamento actual
+            Optional<Funcionario> resolved = attemptResolveInDept(current, rutFuncionario);
+            if (resolved.isPresent()) return resolved.get();
+
+            // Ascender
+            Long parentId = current.getIdDeptoSuperior();
+            if (parentId == null) return null;
+
+            DepartamentoResponse parent = safeObtenerDepto(parentId);
+            if (parent == null) return null;
+
+            // Intento final si es nivel de parada
+            if (isStopLevel(parent)) {
+                Optional<Funcionario> finalResolved = attemptResolveInDept(parent, rutFuncionario);
+                return finalResolved.orElse(null);
+            }
+
+            current = parent;
+        }
+
+        return null;
+    }
+
+    private Optional<Integer> getCandidateRut(DepartamentoResponse depto, Integer rutFuncionario) {
+        if (depto == null) return Optional.empty();
+        Integer rutJefe = depto.getRutJefe();
+        Integer rutJefeSup = depto.getRutJefeSuperior();
+
+        if (rutJefe != null && !java.util.Objects.equals(rutJefe, rutFuncionario)) {
+            return Optional.of(rutJefe);
+        }
+        if (rutJefe == null && rutJefeSup != null && !java.util.Objects.equals(rutJefeSup, rutFuncionario)) {
+            return Optional.of(rutJefeSup);
+        }
+        return Optional.empty();
+    }
+
+    private Optional<Funcionario> findFuncionarioByRut(Integer rut) {
+        if (rut == null) return Optional.empty();
+        try {
+            return funcionarioRepository.findByRut(rut);
+        } catch (Exception e) {
+            logger.warn("Error al buscar funcionario por rut={}", rut, e);
+            return Optional.empty();
+        }
+    }
+
+    private Optional<Funcionario> attemptResolveInDept(DepartamentoResponse depto, Integer rutFuncionario) {
+        Optional<Integer> candidateRutOpt = getCandidateRut(depto, rutFuncionario);
+        if (candidateRutOpt.isEmpty()) return Optional.empty();
+        return findFuncionarioByRut(candidateRutOpt.get());
+    }
+
+    private DepartamentoResponse safeObtenerDepto(Long id) {
+        try {
+            return apiDepartamentoService.obtenerDetalleDepartamentoById(id);
+        } catch (Exception e) {
+            logger.warn("Fallo al obtener departamento id={}", id, e);
+            return null;
+        }
+    }
+
+    private boolean isStopLevel(DepartamentoResponse depto) {
+        if (depto == null || depto.getNombre() == null) return false;
+        String nombre = depto.getNombre().toUpperCase();
+        return nombre.contains("SUBDIRECCION") || nombre.contains("DIRECCION");
     }
 
     @Override

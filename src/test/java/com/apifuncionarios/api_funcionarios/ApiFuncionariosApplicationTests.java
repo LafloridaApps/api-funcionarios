@@ -8,6 +8,8 @@ class ApiFuncionariosApplicationTests {
 
 	@Test
 	void contextLoads() {
+		/* This test is intentionally empty: it only verifies that the Spring
+		   application context loads without errors, so no assertions are required. */
 	}
 
 }
