@@ -35,7 +35,7 @@ docker run \
            --restart always \
            -d -p ${PUERTO}:${PUERTO} \
            --env-file .env \
-           --network appx \
+           --network laflorida \
            --add-host=host.docker.internal:host-gateway \
            --name ${NOMBRE_APP}-container \
            $TARGET_IMAGE
