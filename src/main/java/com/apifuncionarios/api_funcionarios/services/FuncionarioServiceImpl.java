@@ -174,7 +174,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     public ResumenFeriadoLegal resumenFeriadosLegales(Integer rut, Integer ident) {
         ResumenFeriadoLegal resumen = apiFuncionarioService.obtenerFeriadosLegales(rut, ident);
         if (resumen == null) {
-            throw new NotFounException(String.format("No se encontraron feriados para el rut %d", rut));
+            return null;
         }
         return resumen;
     }

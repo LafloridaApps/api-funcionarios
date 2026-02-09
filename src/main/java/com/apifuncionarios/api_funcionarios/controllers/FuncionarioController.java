@@ -1,5 +1,8 @@
 package com.apifuncionarios.api_funcionarios.controllers;
 
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
 import com.apifuncionarios.api_funcionarios.services.interfaces.FuncionarioService;
 import com.apifuncionarios.api_funcionarios.services.interfaces.SearchFuncionarioService;
 
@@ -41,10 +45,16 @@ public class FuncionarioController {
     @GetMapping("/feriados")
     public ResponseEntity<Object> obtenerDetalleFeriados(@RequestParam Integer rut, @RequestParam Integer ident) {
 
-        return ResponseEntity.ok(funcionarioService.resumenFeriadosLegales(rut, ident));
+        ResumenFeriadoLegal response = funcionarioService.resumenFeriadosLegales(rut, ident);
+        if (response == null) {
+            return ResponseEntity.status(HttpStatus.OK).body(Map.of("message", "No se encontraron feriados"));
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+
     }
 
-     @GetMapping("/administrativos")
+    @GetMapping("/administrativos")
     public ResponseEntity<Object> obtenerAdministrativos(@RequestParam Integer rut, @RequestParam Integer ident) {
 
         return ResponseEntity.ok(funcionarioService.resumenAdm(rut, ident));
