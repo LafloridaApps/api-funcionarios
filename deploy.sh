@@ -34,7 +34,7 @@ echo "--- Iniciando contenedor en puerto $PUERTO ---"
 docker run \
            --restart always \
            -d -p ${PUERTO}:${PUERTO} \
-           --env-file .env \
+           --env-file docker.env \
            --network laflorida \
            --add-host=host.docker.internal:host-gateway \
            --name ${NOMBRE_APP}-container \
