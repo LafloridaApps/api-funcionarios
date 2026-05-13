@@ -1,5 +1,7 @@
 package com.apifuncionarios.api_funcionarios.entities;
 
+import java.time.LocalDate;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -24,6 +26,7 @@ public class Funcionario {
     private String tipoContrato;
     private String escalafon;
     private int grado;
+    private LocalDate fechaNacimiento;
 
     private Long idDepto;
 
@@ -129,5 +132,13 @@ public class Funcionario {
 
     public void setGrado(int grado) {
         this.grado = grado;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
     }
 }

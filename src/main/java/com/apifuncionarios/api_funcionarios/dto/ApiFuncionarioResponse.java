@@ -1,5 +1,7 @@
 package com.apifuncionarios.api_funcionarios.dto;
 
+import java.time.LocalDate;
+
 public class ApiFuncionarioResponse {
 
     private Integer rut;
@@ -16,6 +18,13 @@ public class ApiFuncionarioResponse {
     private String tipoContrato;
     private String escalafon;
     private int grado;
+    private LocalDate fechaNacimiento;
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+
 
     public String getEscalafon() {
         return escalafon;

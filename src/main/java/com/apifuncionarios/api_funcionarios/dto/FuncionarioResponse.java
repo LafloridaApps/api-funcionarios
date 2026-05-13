@@ -1,5 +1,7 @@
 package com.apifuncionarios.api_funcionarios.dto;
 
+import java.time.LocalDate;
+
 public class FuncionarioResponse {
 
     private Integer rut;
@@ -17,6 +19,7 @@ public class FuncionarioResponse {
     private String tipoContrato;
     private String escalafon;
     private int grado;
+    private LocalDate fechaNacimiento;
 
     private FuncionarioResponse(Builder builder) {
         this.rut = builder.rut;
@@ -34,6 +37,7 @@ public class FuncionarioResponse {
         this.tipoContrato = builder.tipoContrato;
         this.escalafon = builder.escalafon;
         this.grado = builder.grado;
+        this.fechaNacimiento = builder.fechaNacimiento;
     }
 
     public static class Builder {
@@ -52,6 +56,7 @@ public class FuncionarioResponse {
         private String tipoContrato;
         private String escalafon;
         private int grado;
+        private LocalDate fechaNacimiento;
 
         public Builder rut(Integer rut) {
             this.rut = rut;
@@ -129,6 +134,11 @@ public class FuncionarioResponse {
 
         public Builder grado(int grado) {
             this.grado = grado;
+            return this;
+        }
+
+        public Builder fechaNacimiento(LocalDate fechaNacimiento) {
+            this.fechaNacimiento = fechaNacimiento;
             return this;
         }
     }
@@ -252,6 +262,14 @@ public class FuncionarioResponse {
 
     public void setTipoContrato(String tipoContrato) {
         this.tipoContrato = tipoContrato;
+    }
+
+    public LocalDate getFechaNacimiento() {
+        return fechaNacimiento;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
     }
 
 }

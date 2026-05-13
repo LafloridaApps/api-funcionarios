@@ -44,17 +44,18 @@ public class FuncionarioMapper {
         }
         entity.setEscalafon(dto.getEscalafon().trim());
         entity.setGrado(dto.getGrado());
+        entity.setFechaNacimiento(dto.getFechaNacimiento());
     }
 
-    public FuncionarioResponse toResponseDto(Funcionario entity, DepartamentoResponse depto, Funcionario jefe, String foto) {
+    public FuncionarioResponse toResponseDto(Funcionario entity, DepartamentoResponse depto, Funcionario jefe,
+            String foto) {
         if (entity == null) {
             return null;
         }
-        
+
         String nombreJefe = (jefe != null && jefe.getRut() != null) ? jefe.getNombreCompleto() : "";
         Long codDeptoJefe = (jefe != null) ? jefe.getIdDepto() : null;
         String nombreDepto = (depto != null) ? depto.getNombre() : "";
-
 
         return new FuncionarioResponse.Builder()
                 .nombre(entity.getNombres())
@@ -72,6 +73,7 @@ public class FuncionarioMapper {
                 .ident(entity.getIdent())
                 .escalafon(entity.getEscalafon().trim())
                 .grado(entity.getGrado())
+                .fechaNacimiento(entity.getFechaNacimiento())
                 .build();
     }
 }
