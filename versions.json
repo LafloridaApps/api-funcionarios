@@ -1,5 +1,5 @@
 {
-  "currentVersion": "1.0.4",
+  "currentVersion": "1.0.5",
   "history": [
     {
       "version": "1.0.0",
@@ -25,6 +25,11 @@
       "version": "1.0.4",
       "date": "2026-06-30",
       "description": "Deploy v1.0.4"
+    },
+    {
+      "version": "1.0.5",
+      "date": "2026-06-30",
+      "description": "Deploy v1.0.5"
     }
   ]
 }
