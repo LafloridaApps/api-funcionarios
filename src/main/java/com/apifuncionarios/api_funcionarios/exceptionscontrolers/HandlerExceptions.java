@@ -1,6 +1,5 @@
 package com.apifuncionarios.api_funcionarios.exceptionscontrolers;
 
-import java.time.LocalDateTime;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,6 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import com.apifuncionarios.api_funcionarios.dto.ErrorResponse;
 import com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException;
 import com.apifuncionarios.api_funcionarios.exceptions.NotFounException;
+import com.apifuncionarios.api_funcionarios.utils.FechaUtils;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -37,7 +37,7 @@ public class HandlerExceptions {
     private <T extends Exception> ErrorResponse maptoErrorResponse(T e, HttpServletRequest request, HttpStatus status) {
 
         return ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
+                .timestamp(FechaUtils.fechaActualHora())
                 .status(status.value())
                 .error(status.getReasonPhrase())
                 .mensaje(e.getMessage())

@@ -10,6 +10,7 @@ import com.apifuncionarios.api_funcionarios.dto.FuncionarioResponse;
 import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;
 import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
 import com.apifuncionarios.api_funcionarios.entities.Funcionario;
+import com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException;
 import com.apifuncionarios.api_funcionarios.exceptions.NotFounException;
 import com.apifuncionarios.api_funcionarios.mappers.FuncionarioMapper;
 import com.apifuncionarios.api_funcionarios.repositories.FuncionarioRepository;
@@ -18,6 +19,10 @@ import com.apifuncionarios.api_funcionarios.services.interfaces.ApiFuncionarioSe
 import com.apifuncionarios.api_funcionarios.services.interfaces.FuncionarioService;
 import com.apifuncionarios.api_funcionarios.services.sync.ISincronizacionService;
 import com.apifuncionarios.api_funcionarios.utils.RepositoryUtils;
+import com.apifuncionarios.api_funcionarios.config.ApiProperties;
+
+import java.util.Comparator;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -28,6 +33,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     private final ApiDepartamentoService apiDepartamentoService;
     private final ISincronizacionService sincronizacionService;
     private final FuncionarioMapper funcionarioMapper;
+    private final ApiProperties apiProperties;
 
     private static final String NOT_FOUND_MESSAGE = "No se encontro el funcionario con el rut %d";
     private static final Logger logger = LoggerFactory.getLogger(FuncionarioServiceImpl.class);
@@ -36,31 +42,41 @@ public class FuncionarioServiceImpl implements FuncionarioService {
             FuncionarioRepository funcionarioRepository,
             ApiDepartamentoService apiDepartamentoService,
             ISincronizacionService sincronizacionService,
-            FuncionarioMapper funcionarioMapper) {
+            FuncionarioMapper funcionarioMapper,
+            ApiProperties apiProperties) {
         this.apiFuncionarioService = apiFuncionarioService;
         this.funcionarioRepository = funcionarioRepository;
         this.apiDepartamentoService = apiDepartamentoService;
         this.sincronizacionService = sincronizacionService;
         this.funcionarioMapper = funcionarioMapper;
+        this.apiProperties = apiProperties;
     }
 
     @Override
     public FuncionarioResponse getFuncionarioInfo(Integer rut) {
-        ApiFuncionarioResponse response = null;
+        ApiFuncionarioResponse apiResponse = null;
         try {
-            response = apiFuncionarioService.obtenerDetalleColaborador(rut);
+            List<ApiFuncionarioResponse> listResponse = apiFuncionarioService.obtenerListDetalleColaborador(rut);
+            if (listResponse != null && !listResponse.isEmpty()) {
+                apiResponse = listResponse.stream()
+                        .max(Comparator.comparing(ApiFuncionarioResponse::getFechafin, Comparator.nullsLast(Comparator.naturalOrder())))
+                        .orElse(null);
+                        sincronizacionService.sincronizarYActualizarFuncionario(apiResponse);
+            }
         } catch (Exception e) {
             logger.warn("No se pudo obtener el detalle del colaborador desde el servicio externo. Usando datos locales.",
                     e);
         }
 
-        if (response != null) {
+        if (apiResponse != null) {
             // Modo Online: Sincronizar y devolver datos frescos
             try {
-                Funcionario funcionario = sincronizacionService.sincronizarYActualizarFuncionario(response);
-                return buildFuncionarioResponse(funcionario, response.getFoto());
+                Funcionario funcionario = sincronizacionService.sincronizarYActualizarFuncionario(apiResponse);
+                return buildFuncionarioResponse(funcionario, apiResponse.getFoto());
             } catch (Exception e) {
-                logger.warn("Fallo la sincronizacion. Usando datos locales.", e);
+                logger.warn("Fallo la sincronizacion. Usando datos locales. Error: {}", e.getMessage());
+                throw new FuncionarioException("Error al sincronizar y actualizar el funcionario" + e.getMessage()) ;
+                
             }
         }
 
@@ -70,6 +86,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
                 String.format(NOT_FOUND_MESSAGE, rut));
         return buildFuncionarioResponse(funcionario, null);
     }
+
     private FuncionarioResponse buildFuncionarioResponse(Funcionario funcionario, String foto) {
         if (funcionario == null) {
             throw new NotFounException("Funcionario nulo al construir la respuesta");
@@ -79,7 +96,13 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         Long idDepto = funcionario.getIdDepto();
         if (idDepto != null) {
             try {
+                logger.info("Solicitando detalle del departamento a la API externa (URL: {}/api/departamentos?id={}) para el idDepto: {}", apiProperties.getDepartamentoUrl(), idDepto, idDepto);
                 depto = apiDepartamentoService.obtenerDetalleDepartamentoById(idDepto);
+                if (depto != null) {
+                    logger.info("API respondió correctamente. Departamento obtenido: id={}, nombre='{}'", depto.getId(), depto.getNombre());
+                } else {
+                    logger.warn("La API de departamentos no devolvió datos (null) para el idDepto: {}", idDepto);
+                }
             } catch (Exception e) {
                 logger.warn("No se pudo obtener el detalle del departamento id={} para rut={}", idDepto,
                         funcionario.getRut(), e);
@@ -93,9 +116,11 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         return funcionarioMapper.toResponseDto(funcionario, depto, jefeDepto, foto);
     }
 
-    // Extrae la lógica de resolución del jefe de departamento para facilitar tests y legibilidad
+    // Extrae la lógica de resolución del jefe de departamento para facilitar tests
+    // y legibilidad
     Funcionario resolveJefeDepto(DepartamentoResponse depto, Integer rutFuncionario) {
-        if (depto == null) return null;
+        if (depto == null)
+            return null;
 
         DepartamentoResponse current = depto;
         final int maxHops = 20; // seguridad para evitar loops infinitos
@@ -104,14 +129,17 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 
             // Intentar resolver en el departamento actual
             Optional<Funcionario> resolved = attemptResolveInDept(current, rutFuncionario);
-            if (resolved.isPresent()) return resolved.get();
+            if (resolved.isPresent())
+                return resolved.get();
 
             // Ascender
             Long parentId = current.getIdDeptoSuperior();
-            if (parentId == null) return null;
+            if (parentId == null)
+                return null;
 
             DepartamentoResponse parent = safeObtenerDepto(parentId);
-            if (parent == null) return null;
+            if (parent == null)
+                return null;
 
             // Intento final si es nivel de parada
             if (isStopLevel(parent)) {
@@ -126,7 +154,8 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     }
 
     private Optional<Integer> getCandidateRut(DepartamentoResponse depto, Integer rutFuncionario) {
-        if (depto == null) return Optional.empty();
+        if (depto == null)
+            return Optional.empty();
         Integer rutJefe = depto.getRutJefe();
         Integer rutJefeSup = depto.getRutJefeSuperior();
 
@@ -140,7 +169,8 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     }
 
     private Optional<Funcionario> findFuncionarioByRut(Integer rut) {
-        if (rut == null) return Optional.empty();
+        if (rut == null)
+            return Optional.empty();
         try {
             return funcionarioRepository.findByRut(rut);
         } catch (Exception e) {
@@ -151,7 +181,8 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 
     private Optional<Funcionario> attemptResolveInDept(DepartamentoResponse depto, Integer rutFuncionario) {
         Optional<Integer> candidateRutOpt = getCandidateRut(depto, rutFuncionario);
-        if (candidateRutOpt.isEmpty()) return Optional.empty();
+        if (candidateRutOpt.isEmpty())
+            return Optional.empty();
         return findFuncionarioByRut(candidateRutOpt.get());
     }
 
@@ -165,7 +196,8 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     }
 
     private boolean isStopLevel(DepartamentoResponse depto) {
-        if (depto == null || depto.getNombre() == null) return false;
+        if (depto == null || depto.getNombre() == null)
+            return false;
         String nombre = depto.getNombre().toUpperCase();
         return nombre.contains("SUBDIRECCION") || nombre.contains("DIRECCION");
     }

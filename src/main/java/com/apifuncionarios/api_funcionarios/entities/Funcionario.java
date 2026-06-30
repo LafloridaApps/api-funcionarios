@@ -27,9 +27,13 @@ public class Funcionario {
     private String escalafon;
     private int grado;
     private LocalDate fechaNacimiento;
+    private boolean vigente;
+    private LocalDate fechafin;
 
     private Long idDepto;
 
+
+    
     public void setIdent(Integer ident) {
         this.ident = ident;
     }
@@ -140,5 +144,21 @@ public class Funcionario {
 
     public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public boolean isVigente() {
+        return vigente;
+    }
+
+    public void setVigente(boolean vigente) {
+        this.vigente = vigente;
+    }
+
+    public LocalDate getFechafin() {
+        return fechafin;
+    }
+
+    public void setFechafin(LocalDate fechafin) {
+        this.fechafin = fechafin;
     }
 }

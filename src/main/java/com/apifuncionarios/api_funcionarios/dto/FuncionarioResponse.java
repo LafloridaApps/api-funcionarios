@@ -20,6 +20,8 @@ public class FuncionarioResponse {
     private String escalafon;
     private int grado;
     private LocalDate fechaNacimiento;
+    private LocalDate fechafin;
+    private boolean vigente;
 
     private FuncionarioResponse(Builder builder) {
         this.rut = builder.rut;
@@ -38,6 +40,10 @@ public class FuncionarioResponse {
         this.escalafon = builder.escalafon;
         this.grado = builder.grado;
         this.fechaNacimiento = builder.fechaNacimiento;
+        this.fechafin = builder.fechafin;
+        this.vigente = builder.vigente;
+        
+
     }
 
     public static class Builder {
@@ -57,6 +63,9 @@ public class FuncionarioResponse {
         private String escalafon;
         private int grado;
         private LocalDate fechaNacimiento;
+        private LocalDate fechafin;
+        private boolean vigente;
+
 
         public Builder rut(Integer rut) {
             this.rut = rut;
@@ -136,6 +145,17 @@ public class FuncionarioResponse {
             this.grado = grado;
             return this;
         }
+        public Builder fechafin(LocalDate fechafin) {
+            this.fechafin = fechafin;
+            return this;
+
+        }
+
+        public Builder vigente(boolean vigente){
+            this.vigente = vigente;
+            return this;
+        }
+
 
         public Builder fechaNacimiento(LocalDate fechaNacimiento) {
             this.fechaNacimiento = fechaNacimiento;
@@ -271,5 +291,23 @@ public class FuncionarioResponse {
     public void setFechaNacimiento(LocalDate fechaNacimiento) {
         this.fechaNacimiento = fechaNacimiento;
     }
+
+    public LocalDate getFechafin() {
+        return fechafin;
+    }
+
+    public void setFechafin(LocalDate fechafin) {
+        this.fechafin = fechafin;
+    }
+
+    public boolean isVigente() {
+        return vigente;
+    }
+
+    public void setVigente(boolean vigente) {
+        this.vigente = vigente;
+    }
+
+    
 
 }

@@ -1,6 +1,7 @@
 package com.apifuncionarios.api_funcionarios.services;
 
 import java.time.Duration;
+import java.util.List;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
@@ -73,6 +74,18 @@ public class ApiFuncionarioServiceImpl implements ApiFuncionarioService {
                 .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.empty())
                 .bodyToMono(ResumenAdm.class)
 
+                .onErrorResume(Exception.class, e -> Mono.empty())
+                .block();
+    }
+
+    @Override
+    public List<ApiFuncionarioResponse> obtenerListDetalleColaborador(Integer rut) {
+        return webClient.get()
+                .uri("/api/funcionario/{rut}/list", rut)
+                .retrieve()
+                .onStatus(HttpStatusCode::is4xxClientError, response -> Mono.empty())
+                .bodyToFlux(ApiFuncionarioResponse.class)
+                .collectList()
                 .onErrorResume(Exception.class, e -> Mono.empty())
                 .block();
     }

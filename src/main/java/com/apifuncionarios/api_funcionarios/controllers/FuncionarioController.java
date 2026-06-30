@@ -19,7 +19,7 @@ import com.apifuncionarios.api_funcionarios.services.interfaces.SearchViewFuncio
 
 @RestController
 @RequestMapping("/api/funcionario")
-@CrossOrigin(origins = "http://localhost:5173")
+@CrossOrigin(origins = {"http://localhost:5173", "https://intranet.laflorida.cl"})
 public class FuncionarioController {
 
     private final FuncionarioService funcionarioService;

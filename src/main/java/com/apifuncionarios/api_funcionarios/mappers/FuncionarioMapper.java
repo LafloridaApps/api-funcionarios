@@ -26,6 +26,9 @@ public class FuncionarioMapper {
         funcionario.setIdent(dto.getIdent());
         funcionario.setEscalafon(dto.getEscalafon().trim());
         funcionario.setGrado(dto.getGrado());
+        funcionario.setVigente(dto.isVigente());
+        funcionario.setFechaNacimiento(dto.getFechaNacimiento());
+        funcionario.setFechafin(dto.getFechafin());
         return funcionario;
     }
 
@@ -45,6 +48,8 @@ public class FuncionarioMapper {
         entity.setEscalafon(dto.getEscalafon().trim());
         entity.setGrado(dto.getGrado());
         entity.setFechaNacimiento(dto.getFechaNacimiento());
+        entity.setVigente(dto.isVigente());
+        entity.setFechafin(dto.getFechafin());
     }
 
     public FuncionarioResponse toResponseDto(Funcionario entity, DepartamentoResponse depto, Funcionario jefe,
@@ -74,6 +79,8 @@ public class FuncionarioMapper {
                 .escalafon(entity.getEscalafon().trim())
                 .grado(entity.getGrado())
                 .fechaNacimiento(entity.getFechaNacimiento())
+                .vigente(entity.isVigente())
+                .fechafin(entity.getFechafin())
                 .build();
     }
 }

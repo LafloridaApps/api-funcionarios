@@ -12,6 +12,7 @@ import com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException;
 import com.apifuncionarios.api_funcionarios.mappers.FuncionarioMapper;
 import com.apifuncionarios.api_funcionarios.repositories.FuncionarioRepository;
 import com.apifuncionarios.api_funcionarios.services.interfaces.ApiDepartamentoService;
+import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 
 @Service
 public class SincronizacionServiceImpl implements ISincronizacionService {
@@ -21,18 +22,26 @@ public class SincronizacionServiceImpl implements ISincronizacionService {
     private final FuncionarioRepository funcionarioRepository;
     private final FuncionarioMapper funcionarioMapper;
     private final ApiDepartamentoService apiDepartamentoService;
+    private final ApiProperties apiProperties;
 
-    public SincronizacionServiceImpl(FuncionarioRepository funcionarioRepository, FuncionarioMapper funcionarioMapper, ApiDepartamentoService apiDepartamentoService) {
+    public SincronizacionServiceImpl(FuncionarioRepository funcionarioRepository, FuncionarioMapper funcionarioMapper, ApiDepartamentoService apiDepartamentoService, ApiProperties apiProperties) {
         this.funcionarioRepository = funcionarioRepository;
         this.funcionarioMapper = funcionarioMapper;
         this.apiDepartamentoService = apiDepartamentoService;
+        this.apiProperties = apiProperties;
     }
 
     @Override
     public Funcionario sincronizarYActualizarFuncionario(ApiFuncionarioResponse response) {
         DepartamentoResponse depto = null;
         try {
+            logger.info("Solicitando departamento a la API externa (URL: {}/api/departamentos/codex?codex={}) para el codDeptoExt: {}", apiProperties.getDepartamentoUrl(), response.getCodDeptoExt(), response.getCodDeptoExt());
             depto = apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx(response.getCodDeptoExt());
+            if (depto != null) {
+                logger.info("API respondió correctamente. Departamento sincronizado: id={}, nombre='{}'", depto.getId(), depto.getNombre());
+            } else {
+                logger.warn("La API de departamentos no devolvió datos (null) para el codDeptoExt: {}", response.getCodDeptoExt());
+            }
         } catch (FuncionarioException e) {
             logger.warn("No se pudo obtener el departamento de la API externa para el funcionario con RUT {}. Se utilizarán los datos locales existentes para el departamento. Error: {}", response.getRut(), e.getMessage());
         }

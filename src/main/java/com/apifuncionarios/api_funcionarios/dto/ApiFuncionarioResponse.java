@@ -19,12 +19,14 @@ public class ApiFuncionarioResponse {
     private String escalafon;
     private int grado;
     private LocalDate fechaNacimiento;
+    private LocalDate fechafin;
+    private boolean vigente;
+
+    
 
     public LocalDate getFechaNacimiento() {
         return fechaNacimiento;
     }
-
-
 
     public String getEscalafon() {
         return escalafon;
@@ -136,6 +138,26 @@ public class ApiFuncionarioResponse {
 
     public void setTipoContrato(String tipoContrato) {
         this.tipoContrato = tipoContrato;
+    }
+
+    public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        this.fechaNacimiento = fechaNacimiento;
+    }
+
+    public LocalDate getFechafin() {
+        return fechafin;
+    }
+
+    public void setFechafin(LocalDate fechafin) {
+        this.fechafin = fechafin;
+    }
+
+    public boolean isVigente() {
+        return vigente;
+    }
+
+    public void setVigente(boolean vigente) {
+        this.vigente = vigente;
     }
 
 }

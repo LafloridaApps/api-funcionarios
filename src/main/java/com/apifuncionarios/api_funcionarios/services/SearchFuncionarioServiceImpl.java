@@ -1,5 +1,6 @@
 package com.apifuncionarios.api_funcionarios.services;
 
+import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +24,8 @@ public class SearchFuncionarioServiceImpl implements SearchFuncionarioService {
     @Override
     public SearchFuncionarioResponse searchByName(String pattern, int pageNumber) {
 
-        Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by("apellidoPaterno").ascending());
+        Sort sort = Sort.by(TypedPropertyPath.path(Funcionario::getApellidoPaterno));
+        Pageable pageable = PageRequest.of(pageNumber, 10, sort);
 
         Page<Funcionario> pageFuncionarios = funcionarioRepository
                 .findByNombresContainingIgnoreCaseOrApellidoPaternoContainingIgnoreCaseOrApellidoMaternoContainingIgnoreCase(
