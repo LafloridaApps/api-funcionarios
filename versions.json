@@ -1,0 +1,30 @@
+{
+  "currentVersion": "1.0.4",
+  "history": [
+    {
+      "version": "1.0.0",
+      "date": "2026-06-30",
+      "description": "Initial deployment"
+    },
+    {
+      "version": "1.0.1",
+      "date": "2026-06-30",
+      "description": "Deploy v1.0.1"
+    },
+    {
+      "version": "1.0.2",
+      "date": "2026-06-30",
+      "description": "Deploy v1.0.2"
+    },
+    {
+      "version": "1.0.3",
+      "date": "2026-06-30",
+      "description": "Deploy v1.0.3"
+    },
+    {
+      "version": "1.0.4",
+      "date": "2026-06-30",
+      "description": "Deploy v1.0.4"
+    }
+  ]
+}
