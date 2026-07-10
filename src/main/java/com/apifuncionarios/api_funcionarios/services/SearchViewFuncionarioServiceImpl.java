@@ -2,7 +2,6 @@ package com.apifuncionarios.api_funcionarios.services;
 
 import java.util.List;
 
-import org.springframework.data.core.TypedPropertyPath;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,10 +23,10 @@ public class SearchViewFuncionarioServiceImpl implements SearchViewFuncionarioSe
     }
 
     @Override
+    @SuppressWarnings("SpringDataRepositoryMethodParametersInspection")
     public SearchViewFuncionarioResponse findByNombre(String pattern, int pageNumber) {
 
-        Sort sort = Sort.by(TypedPropertyPath.path(SearchnNombreDto::nombreCompleto));
-        Pageable pageable = PageRequest.of(pageNumber, 10, sort);
+        Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by("nombre_completo").ascending());
 
         Page<SearchnNombreDto> pageResutl = funcionarioRepository.findByNombre(pattern, pageable);
 
