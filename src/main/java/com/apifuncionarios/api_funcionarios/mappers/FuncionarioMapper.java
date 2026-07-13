@@ -28,7 +28,8 @@ public class FuncionarioMapper {
         funcionario.setGrado(dto.getGrado());
         funcionario.setVigente(dto.isVigente());
         funcionario.setFechaNacimiento(dto.getFechaNacimiento());
-        funcionario.setFechafinContrato(dto.getFechafin());
+        funcionario.setFechafinContrato(dto.getFechafinContrato());
+        funcionario.setFechaInicioContrato(dto.getFechainicioContrato());
         return funcionario;
     }
 
@@ -49,7 +50,12 @@ public class FuncionarioMapper {
         entity.setGrado(dto.getGrado());
         entity.setFechaNacimiento(dto.getFechaNacimiento());
         entity.setVigente(dto.isVigente());
-        entity.setFechafinContrato(dto.getFechafin());
+        if (dto.getFechafinContrato() != null) {
+            entity.setFechafinContrato(dto.getFechafinContrato());
+        }
+        if (dto.getFechainicioContrato() != null) {
+            entity.setFechaInicioContrato(dto.getFechainicioContrato());
+        }
     }
 
     public FuncionarioResponse toResponseDto(Funcionario entity, DepartamentoResponse depto, Funcionario jefe,

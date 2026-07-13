@@ -21,8 +21,6 @@ import com.apifuncionarios.api_funcionarios.services.sync.ISincronizacionService
 import com.apifuncionarios.api_funcionarios.utils.RepositoryUtils;
 import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 
-import java.util.Comparator;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -54,30 +52,21 @@ public class FuncionarioServiceImpl implements FuncionarioService {
 
     @Override
     public FuncionarioResponse getFuncionarioInfo(Integer rut) {
-        ApiFuncionarioResponse apiResponse = null;
         try {
-            List<ApiFuncionarioResponse> listResponse = apiFuncionarioService.obtenerListDetalleColaborador(rut);
-            if (listResponse != null && !listResponse.isEmpty()) {
-                apiResponse = listResponse.stream()
-                        .max(Comparator.comparing(ApiFuncionarioResponse::getFechafin, Comparator.nullsLast(Comparator.naturalOrder())))
-                        .orElse(null);
-                        sincronizacionService.sincronizarYActualizarFuncionario(apiResponse);
+            ApiFuncionarioResponse apiResponse = apiFuncionarioService.obtenerDetalleColaborador(rut);
+            if (apiResponse != null) {
+                // Modo Online: Sincronizar y devolver datos frescos
+                try {
+                    Funcionario funcionario = sincronizacionService.sincronizarYActualizarFuncionario(apiResponse);
+                    return buildFuncionarioResponse(funcionario, apiResponse.getFoto());
+                } catch (Exception e) {
+                    logger.warn("Fallo la sincronizacion. Usando datos locales. Error: {}", e.getMessage());
+                    throw new FuncionarioException("Error al sincronizar y actualizar el funcionario" + e.getMessage());
+                }
             }
         } catch (Exception e) {
             logger.warn("No se pudo obtener el detalle del colaborador desde el servicio externo. Usando datos locales.",
                     e);
-        }
-
-        if (apiResponse != null) {
-            // Modo Online: Sincronizar y devolver datos frescos
-            try {
-                Funcionario funcionario = sincronizacionService.sincronizarYActualizarFuncionario(apiResponse);
-                return buildFuncionarioResponse(funcionario, apiResponse.getFoto());
-            } catch (Exception e) {
-                logger.warn("Fallo la sincronizacion. Usando datos locales. Error: {}", e.getMessage());
-                throw new FuncionarioException("Error al sincronizar y actualizar el funcionario" + e.getMessage()) ;
-                
-            }
         }
 
         // Modo Offline: Usar datos locales

@@ -2,6 +2,8 @@ package com.apifuncionarios.api_funcionarios.dto;
 
 import java.time.LocalDate;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class ApiFuncionarioResponse {
 
     private Integer rut;
@@ -19,10 +21,9 @@ public class ApiFuncionarioResponse {
     private String escalafon;
     private int grado;
     private LocalDate fechaNacimiento;
-    private LocalDate fechafin;
+    private LocalDate fechainicioContrato;
+    private LocalDate fechafinContrato;
     private boolean vigente;
-
-    
 
     public LocalDate getFechaNacimiento() {
         return fechaNacimiento;
@@ -144,12 +145,13 @@ public class ApiFuncionarioResponse {
         this.fechaNacimiento = fechaNacimiento;
     }
 
-    public LocalDate getFechafin() {
-        return fechafin;
+    public LocalDate getFechafinContrato() {
+        return fechafinContrato;
     }
 
-    public void setFechafin(LocalDate fechafin) {
-        this.fechafin = fechafin;
+    @JsonAlias({"fechafinContrato", "fechaFinContrato"})
+    public void setFechafinContrato(LocalDate fechafin) {
+        this.fechafinContrato = fechafin;
     }
 
     public boolean isVigente() {
@@ -158,6 +160,15 @@ public class ApiFuncionarioResponse {
 
     public void setVigente(boolean vigente) {
         this.vigente = vigente;
+    }
+
+    public LocalDate getFechainicioContrato() {
+        return fechainicioContrato;
+    }
+
+    @JsonAlias({"fechainicioContrato", "fechaInicioContrato"})
+    public void setFechainicioContrato(LocalDate fechainicioContrato) {
+        this.fechainicioContrato = fechainicioContrato;
     }
 
 }
