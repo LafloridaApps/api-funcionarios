@@ -26,7 +26,7 @@ public class SearchViewFuncionarioServiceImpl implements SearchViewFuncionarioSe
     @SuppressWarnings("SpringDataRepositoryMethodParametersInspection")
     public SearchViewFuncionarioResponse findByNombre(String pattern, int pageNumber) {
 
-        Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by("nombre_completo").ascending());
+        Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by(SearchnNombreDto::nombreCompleto).ascending());
 
         Page<SearchnNombreDto> pageResutl = funcionarioRepository.findByNombre(pattern, pageable);
 

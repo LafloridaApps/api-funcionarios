@@ -2,6 +2,7 @@ package com.apifuncionarios.api_funcionarios.entities;
 
 import java.time.LocalDate;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -28,12 +29,12 @@ public class Funcionario {
     private int grado;
     private LocalDate fechaNacimiento;
     private boolean vigente;
-    private LocalDate fechafin;
+    private LocalDate fechaInicioContrato;
+    @Column(name = "fechafin")
+    private LocalDate fechafinContrato;
 
     private Long idDepto;
 
-
-    
     public void setIdent(Integer ident) {
         this.ident = ident;
     }
@@ -154,11 +155,19 @@ public class Funcionario {
         this.vigente = vigente;
     }
 
-    public LocalDate getFechafin() {
-        return fechafin;
+    public LocalDate getFechafinContrato() {
+        return fechafinContrato;
     }
 
-    public void setFechafin(LocalDate fechafin) {
-        this.fechafin = fechafin;
+    public void setFechafinContrato(LocalDate fechafin) {
+        this.fechafinContrato = fechafin;
+    }
+
+    public LocalDate getFechaInicioContrato() {
+        return fechaInicioContrato;
+    }
+
+    public void setFechaInicioContrato(LocalDate fechaInicioContrato) {
+        this.fechaInicioContrato = fechaInicioContrato;
     }
 }

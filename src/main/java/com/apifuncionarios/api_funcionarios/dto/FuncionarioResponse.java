@@ -20,7 +20,8 @@ public class FuncionarioResponse {
     private String escalafon;
     private int grado;
     private LocalDate fechaNacimiento;
-    private LocalDate fechafin;
+    private LocalDate fechainicioContrato;
+    private LocalDate fechafinContrato;
     private boolean vigente;
 
     private FuncionarioResponse(Builder builder) {
@@ -40,9 +41,9 @@ public class FuncionarioResponse {
         this.escalafon = builder.escalafon;
         this.grado = builder.grado;
         this.fechaNacimiento = builder.fechaNacimiento;
-        this.fechafin = builder.fechafin;
+        this.fechainicioContrato = builder.fechaInicioContrato;
+        this.fechafinContrato = builder.fechaFinContrato;
         this.vigente = builder.vigente;
-        
 
     }
 
@@ -63,9 +64,9 @@ public class FuncionarioResponse {
         private String escalafon;
         private int grado;
         private LocalDate fechaNacimiento;
-        private LocalDate fechafin;
+        private LocalDate fechaInicioContrato;
+        private LocalDate fechaFinContrato;
         private boolean vigente;
-
 
         public Builder rut(Integer rut) {
             this.rut = rut;
@@ -145,17 +146,22 @@ public class FuncionarioResponse {
             this.grado = grado;
             return this;
         }
-        public Builder fechafin(LocalDate fechafin) {
-            this.fechafin = fechafin;
+
+        public Builder fechaInicioContrato(LocalDate fechaInicioContrato) {
+            this.fechaInicioContrato = fechaInicioContrato;
+            return this;
+        }
+
+        public Builder fechaFinContrato(LocalDate fechaFinContrato) {
+            this.fechaFinContrato = fechaFinContrato;
             return this;
 
         }
 
-        public Builder vigente(boolean vigente){
+        public Builder vigente(boolean vigente) {
             this.vigente = vigente;
             return this;
         }
-
 
         public Builder fechaNacimiento(LocalDate fechaNacimiento) {
             this.fechaNacimiento = fechaNacimiento;
@@ -292,12 +298,8 @@ public class FuncionarioResponse {
         this.fechaNacimiento = fechaNacimiento;
     }
 
-    public LocalDate getFechafin() {
-        return fechafin;
-    }
-
-    public void setFechafin(LocalDate fechafin) {
-        this.fechafin = fechafin;
+    public LocalDate getFechainicioContrato() {
+        return fechainicioContrato;
     }
 
     public boolean isVigente() {
@@ -308,6 +310,8 @@ public class FuncionarioResponse {
         this.vigente = vigente;
     }
 
-    
+    public LocalDate getFechafinContrato() {
+        return fechafinContrato;
+    }
 
 }
