@@ -1,10 +1,19 @@
 package com.apifuncionarios.api_funcionarios.dto;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonAlias;
 
 public class ApiFuncionarioResponse {
+
+    private final Set<String> camposPresentes = new HashSet<>();
+
+    public boolean contieneCampo(String campo) {
+        return camposPresentes.contains(campo);
+    }
+
 
     private Integer rut;
     private String vrut;
@@ -34,6 +43,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setEscalafon(String escalafon) {
+        camposPresentes.add("escalafon");
         this.escalafon = escalafon;
     }
 
@@ -42,6 +52,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setGrado(int grado) {
+        camposPresentes.add("grado");
         this.grado = grado;
     }
 
@@ -66,6 +77,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setNombres(String nombres) {
+        camposPresentes.add("nombres");
         this.nombres = nombres;
     }
 
@@ -74,6 +86,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setPaterno(String paterno) {
+        camposPresentes.add("paterno");
         this.paterno = paterno;
     }
 
@@ -82,6 +95,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setMaterno(String materno) {
+        camposPresentes.add("materno");
         this.materno = materno;
     }
 
@@ -98,6 +112,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setEmail(String email) {
+        camposPresentes.add("email");
         this.email = email;
     }
 
@@ -130,6 +145,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setIdent(int ident) {
+        camposPresentes.add("ident");
         this.ident = ident;
     }
 
@@ -138,10 +154,12 @@ public class ApiFuncionarioResponse {
     }
 
     public void setTipoContrato(String tipoContrato) {
+        camposPresentes.add("tipoContrato");
         this.tipoContrato = tipoContrato;
     }
 
     public void setFechaNacimiento(LocalDate fechaNacimiento) {
+        camposPresentes.add("fechaNacimiento");
         this.fechaNacimiento = fechaNacimiento;
     }
 
@@ -151,6 +169,7 @@ public class ApiFuncionarioResponse {
 
     @JsonAlias({"fechafinContrato", "fechaFinContrato"})
     public void setFechafinContrato(LocalDate fechafin) {
+        camposPresentes.add("fechafinContrato");
         this.fechafinContrato = fechafin;
     }
 
@@ -159,6 +178,7 @@ public class ApiFuncionarioResponse {
     }
 
     public void setVigente(boolean vigente) {
+        camposPresentes.add("vigente");
         this.vigente = vigente;
     }
 
@@ -168,6 +188,7 @@ public class ApiFuncionarioResponse {
 
     @JsonAlias({"fechainicioContrato", "fechaInicioContrato"})
     public void setFechainicioContrato(LocalDate fechainicioContrato) {
+        camposPresentes.add("fechainicioContrato");
         this.fechainicioContrato = fechainicioContrato;
     }
 

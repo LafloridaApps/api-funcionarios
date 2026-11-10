@@ -11,6 +11,7 @@ import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;
 import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
 import com.apifuncionarios.api_funcionarios.entities.Funcionario;
 import com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException;
+import com.apifuncionarios.api_funcionarios.exceptions.ExternalServiceException;
 import com.apifuncionarios.api_funcionarios.exceptions.NotFounException;
 import com.apifuncionarios.api_funcionarios.mappers.FuncionarioMapper;
 import com.apifuncionarios.api_funcionarios.repositories.FuncionarioRepository;
@@ -19,7 +20,6 @@ import com.apifuncionarios.api_funcionarios.services.interfaces.ApiFuncionarioSe
 import com.apifuncionarios.api_funcionarios.services.interfaces.FuncionarioService;
 import com.apifuncionarios.api_funcionarios.services.sync.ISincronizacionService;
 import com.apifuncionarios.api_funcionarios.utils.RepositoryUtils;
-import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 
 import java.util.Optional;
 
@@ -31,49 +31,66 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     private final ApiDepartamentoService apiDepartamentoService;
     private final ISincronizacionService sincronizacionService;
     private final FuncionarioMapper funcionarioMapper;
-    private final ApiProperties apiProperties;
 
-    private static final String NOT_FOUND_MESSAGE = "No se encontro el funcionario con el rut %d";
     private static final Logger logger = LoggerFactory.getLogger(FuncionarioServiceImpl.class);
 
     public FuncionarioServiceImpl(ApiFuncionarioService apiFuncionarioService,
             FuncionarioRepository funcionarioRepository,
             ApiDepartamentoService apiDepartamentoService,
             ISincronizacionService sincronizacionService,
-            FuncionarioMapper funcionarioMapper,
-            ApiProperties apiProperties) {
+            FuncionarioMapper funcionarioMapper) {
         this.apiFuncionarioService = apiFuncionarioService;
         this.funcionarioRepository = funcionarioRepository;
         this.apiDepartamentoService = apiDepartamentoService;
         this.sincronizacionService = sincronizacionService;
         this.funcionarioMapper = funcionarioMapper;
-        this.apiProperties = apiProperties;
     }
 
     @Override
     public FuncionarioResponse getFuncionarioInfo(Integer rut) {
+        if (rut == null || rut <= 0) {
+            throw new FuncionarioException("El RUT del funcionario debe ser un número positivo");
+        }
+        RuntimeException failure = null;
+        String phase = "external_fetch";
         try {
+            java.time.Instant inicioConsulta = java.time.Instant.now();
             ApiFuncionarioResponse apiResponse = apiFuncionarioService.obtenerDetalleColaborador(rut);
             if (apiResponse != null) {
-                // Modo Online: Sincronizar y devolver datos frescos
-                try {
-                    Funcionario funcionario = sincronizacionService.sincronizarYActualizarFuncionario(apiResponse);
-                    return buildFuncionarioResponse(funcionario, apiResponse.getFoto());
-                } catch (Exception e) {
-                    logger.warn("Fallo la sincronizacion. Usando datos locales. Error: {}", e.getMessage());
-                    throw new FuncionarioException("Error al sincronizar y actualizar el funcionario" + e.getMessage());
-                }
+                phase = "identity_validation";
+                validarIdentidadExterna(rut, apiResponse);
+                phase = "synchronization";
+                Funcionario funcionario = sincronizacionService.sincronizarYActualizarFuncionario(apiResponse, inicioConsulta);
+                phase = "response_build";
+                return buildFuncionarioResponse(funcionario, apiResponse.getFoto());
             }
-        } catch (Exception e) {
-            logger.warn("No se pudo obtener el detalle del colaborador desde el servicio externo. Usando datos locales.",
-                    e);
+        } catch (RuntimeException error) {
+            failure = error;
+            logger.warn("event=local_fallback_requested phase={} error_type={}", phase, error.getClass().getSimpleName());
         }
 
-        // Modo Offline: Usar datos locales
-        Funcionario funcionario = RepositoryUtils.findOrThrow(
-                funcionarioRepository.findByRut(rut),
-                String.format(NOT_FOUND_MESSAGE, rut));
+        Optional<Funcionario> local = funcionarioRepository.findByRut(rut);
+        if (local.isEmpty() && failure != null) {
+            logger.warn("event=local_fallback_unavailable phase={}", phase);
+            throw failure;
+        }
+        Funcionario funcionario = RepositoryUtils.findOrThrow(local, "Funcionario no encontrado");
+        if (failure != null && !(failure instanceof FuncionarioException)) {
+            logger.error("event=funcionario_processing_failed phase={} recovered=true", phase, failure);
+        }
+        logger.info("event=local_fallback_used reason={}", failure == null ? "external_empty" : phase);
         return buildFuncionarioResponse(funcionario, null);
+    }
+
+    private void validarIdentidadExterna(Integer rut, ApiFuncionarioResponse response) {
+        if (!rut.equals(response.getRut())) {
+            logger.warn("event=external_identity_rejected reason=rut_missing_invalid_or_mismatched");
+            throw new ExternalServiceException(200, null);
+        }
+        if (response.getVrut() == null || !response.getVrut().trim().matches("[0-9kK]")) {
+            logger.warn("event=external_identity_rejected reason=invalid_verification_digit");
+            throw new ExternalServiceException(200, null);
+        }
     }
 
     private FuncionarioResponse buildFuncionarioResponse(Funcionario funcionario, String foto) {
@@ -85,19 +102,10 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         Long idDepto = funcionario.getIdDepto();
         if (idDepto != null) {
             try {
-                logger.info("Solicitando detalle del departamento a la API externa (URL: {}/api/departamentos?id={}) para el idDepto: {}", apiProperties.getDepartamentoUrl(), idDepto, idDepto);
                 depto = apiDepartamentoService.obtenerDetalleDepartamentoById(idDepto);
-                if (depto != null) {
-                    logger.info("API respondió correctamente. Departamento obtenido: id={}, nombre='{}'", depto.getId(), depto.getNombre());
-                } else {
-                    logger.warn("La API de departamentos no devolvió datos (null) para el idDepto: {}", idDepto);
-                }
-            } catch (Exception e) {
-                logger.warn("No se pudo obtener el detalle del departamento id={} para rut={}", idDepto,
-                        funcionario.getRut(), e);
+            } catch (RuntimeException error) {
+                logger.warn("event=department_enrichment_skipped error_type={}", error.getClass().getSimpleName());
             }
-        } else {
-            logger.debug("Funcionario rut={} no tiene idDepto definido", funcionario.getRut());
         }
 
         Funcionario jefeDepto = resolveJefeDepto(depto, funcionario.getRut());
@@ -163,7 +171,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         try {
             return funcionarioRepository.findByRut(rut);
         } catch (Exception e) {
-            logger.warn("Error al buscar funcionario por rut={}", rut, e);
+            logger.error("event=manager_lookup_failed", e);
             return Optional.empty();
         }
     }
@@ -179,7 +187,7 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         try {
             return apiDepartamentoService.obtenerDetalleDepartamentoById(id);
         } catch (Exception e) {
-            logger.warn("Fallo al obtener departamento id={}", id, e);
+            logger.warn("event=manager_department_unavailable error_type={}", e.getClass().getSimpleName());
             return null;
         }
     }
@@ -204,7 +212,8 @@ public class FuncionarioServiceImpl implements FuncionarioService {
     public ResumenAdm resumenAdm(Integer rut, Integer ident) {
         ResumenAdm resumen = apiFuncionarioService.obtenerAdministrativos(rut, ident);
         if (resumen == null) {
-            throw new NotFounException(String.format("No se encontraron dias administrativos para el rut %d", rut));
+            logger.debug("event=administrative_summary_empty");
+            throw new NotFounException("No se encontraron dias administrativos");
         }
         return resumen;
     }

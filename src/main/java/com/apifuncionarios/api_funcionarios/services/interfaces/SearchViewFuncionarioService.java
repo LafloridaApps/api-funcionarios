@@ -6,4 +6,6 @@ public interface SearchViewFuncionarioService {
 
     SearchViewFuncionarioResponse findByNombre(String pattern, int pageNumber);
 
+    SearchViewFuncionarioResponse findByNombreEnDepartamentos(String pattern, int pageNumber, java.util.List<Long> deptos);
+
 }

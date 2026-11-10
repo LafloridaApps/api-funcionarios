@@ -17,14 +17,14 @@ public class FuncionarioMapper {
         }
         Funcionario funcionario = new Funcionario();
         funcionario.setRut(dto.getRut());
-        funcionario.setVrut(dto.getVrut().charAt(0));
+        funcionario.setVrut(dto.getVrut().trim().toUpperCase(java.util.Locale.ROOT).charAt(0));
         funcionario.setNombres(dto.getNombres());
         funcionario.setApellidoPaterno(dto.getPaterno());
         funcionario.setApellidoMaterno(dto.getMaterno());
         funcionario.setEmail(dto.getEmail());
-        funcionario.setTipoContrato(dto.getTipoContrato().trim());
+        funcionario.setTipoContrato(trim(dto.getTipoContrato()));
         funcionario.setIdent(dto.getIdent());
-        funcionario.setEscalafon(dto.getEscalafon().trim());
+        funcionario.setEscalafon(trim(dto.getEscalafon()));
         funcionario.setGrado(dto.getGrado());
         funcionario.setVigente(dto.isVigente());
         funcionario.setFechaNacimiento(dto.getFechaNacimiento());
@@ -37,25 +37,54 @@ public class FuncionarioMapper {
         if (dto == null || entity == null) {
             return;
         }
-        entity.setNombres(dto.getNombres());
-        entity.setApellidoPaterno(dto.getPaterno());
-        entity.setApellidoMaterno(dto.getMaterno());
-        entity.setEmail(dto.getEmail());
-        entity.setTipoContrato(dto.getTipoContrato().trim());
-        entity.setIdent(dto.getIdent());
-        if (depto != null) {
-            entity.setIdDepto(depto.getId());
+        entity.setVrut(dto.getVrut().trim().toUpperCase(java.util.Locale.ROOT).charAt(0));
+        if (dto.contieneCampo("nombres")) {
+            entity.setNombres(dto.getNombres());
         }
-        entity.setEscalafon(dto.getEscalafon().trim());
-        entity.setGrado(dto.getGrado());
-        entity.setFechaNacimiento(dto.getFechaNacimiento());
-        entity.setVigente(dto.isVigente());
-        if (dto.getFechafinContrato() != null) {
+        if (dto.contieneCampo("paterno")) {
+            entity.setApellidoPaterno(dto.getPaterno());
+        }
+        if (dto.contieneCampo("materno")) {
+            entity.setApellidoMaterno(dto.getMaterno());
+        }
+        if (dto.contieneCampo("email")) {
+            entity.setEmail(dto.getEmail());
+        }
+        if (dto.contieneCampo("tipoContrato")) {
+            entity.setTipoContrato(trim(dto.getTipoContrato()));
+        }
+        if (dto.contieneCampo("ident")) {
+            entity.setIdent(dto.getIdent());
+        }
+        actualizarDepartamento(entity, depto);
+        if (dto.contieneCampo("escalafon")) {
+            entity.setEscalafon(trim(dto.getEscalafon()));
+        }
+        if (dto.contieneCampo("grado")) {
+            entity.setGrado(dto.getGrado());
+        }
+        if (dto.contieneCampo("fechaNacimiento")) {
+            entity.setFechaNacimiento(dto.getFechaNacimiento());
+        }
+        if (dto.contieneCampo("vigente")) {
+            entity.setVigente(dto.isVigente());
+        }
+        if (dto.contieneCampo("fechafinContrato")) {
             entity.setFechafinContrato(dto.getFechafinContrato());
         }
-        if (dto.getFechainicioContrato() != null) {
+        if (dto.contieneCampo("fechainicioContrato")) {
             entity.setFechaInicioContrato(dto.getFechainicioContrato());
         }
+    }
+
+    private void actualizarDepartamento(Funcionario entity, DepartamentoResponse depto) {
+        if (depto != null && depto.getId() != null && depto.getId() > 0) {
+            entity.setIdDepto(depto.getId());
+        }
+    }
+
+    private String trim(String value) {
+        return value == null ? "" : value.trim();
     }
 
     public FuncionarioResponse toResponseDto(Funcionario entity, DepartamentoResponse depto, Funcionario jefe,

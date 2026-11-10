@@ -1,6 +1,7 @@
 package com.apifuncionarios.api_funcionarios.entities;
 
 import java.time.LocalDate;
+import java.time.Instant;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -8,9 +9,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
-@Table(name = "funcionarios")
+@Table(name = "funcionarios", uniqueConstraints = @UniqueConstraint(name = "uk_funcionarios_rut", columnNames = "rut"))
 public class Funcionario {
 
     @Id
@@ -20,6 +22,7 @@ public class Funcionario {
     private String nombres;
     private String apellidoPaterno;
     private String apellidoMaterno;
+    @Column(nullable = false)
     private Integer rut;
     private String email;
     private Character vrut;
@@ -34,6 +37,18 @@ public class Funcionario {
     private LocalDate fechafinContrato;
 
     private Long idDepto;
+
+    @Column(name = "ultima_sincronizacion", columnDefinition = "TIMESTAMP(6)")
+    private Instant ultimaSincronizacion;
+
+    public Instant getUltimaSincronizacion() {
+        return ultimaSincronizacion;
+    }
+
+    public void setUltimaSincronizacion(Instant ultimaSincronizacion) {
+        this.ultimaSincronizacion = ultimaSincronizacion;
+    }
+
 
     public void setIdent(Integer ident) {
         this.ident = ident;

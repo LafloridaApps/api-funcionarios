@@ -1,5 +1,5 @@
 {
-  "currentVersion": "1.0.16",
+  "currentVersion": "1.0.31",
   "history": [
     {
       "version": "1.0.0",
@@ -85,6 +85,81 @@
       "version": "1.0.16",
       "date": "2026-07-13",
       "description": "Deploy v1.0.16"
+    },
+    {
+      "version": "1.0.17",
+      "date": "2026-08-04",
+      "description": "Deploy v1.0.17"
+    },
+    {
+      "version": "1.0.18",
+      "date": "2026-08-04",
+      "description": "Deploy v1.0.18"
+    },
+    {
+      "version": "1.0.19",
+      "date": "2026-08-05",
+      "description": "Deploy v1.0.19"
+    },
+    {
+      "version": "1.0.20",
+      "date": "2026-08-05",
+      "description": "Deploy v1.0.20"
+    },
+    {
+      "version": "1.0.21",
+      "date": "2026-08-05",
+      "description": "Deploy v1.0.21"
+    },
+    {
+      "version": "1.0.22",
+      "date": "2026-08-14",
+      "description": "Deploy v1.0.22"
+    },
+    {
+      "version": "1.0.23",
+      "date": "2026-09-15",
+      "description": "Deploy v1.0.23"
+    },
+    {
+      "version": "1.0.24",
+      "date": "2026-09-15",
+      "description": "Deploy v1.0.24"
+    },
+    {
+      "version": "1.0.25",
+      "date": "2026-09-15",
+      "description": "Deploy v1.0.25"
+    },
+    {
+      "version": "1.0.26",
+      "date": "2026-09-16",
+      "description": "\u001b[3~"
+    },
+    {
+      "version": "1.0.27",
+      "date": "2026-10-28",
+      "description": "Deploy v1.0.27"
+    },
+    {
+      "version": "1.0.28",
+      "date": "2026-11-06",
+      "description": "Deploy v1.0.28"
+    },
+    {
+      "version": "1.0.29",
+      "date": "2026-11-10",
+      "description": "Deploy v1.0.29"
+    },
+    {
+      "version": "1.0.30",
+      "date": "2026-11-10",
+      "description": "Deploy v1.0.30"
+    },
+    {
+      "version": "1.0.31",
+      "date": "2026-11-10",
+      "description": "Deploy v1.0.31"
     }
   ]
 }

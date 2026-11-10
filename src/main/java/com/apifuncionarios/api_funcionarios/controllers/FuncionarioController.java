@@ -22,6 +22,7 @@ import com.apifuncionarios.api_funcionarios.services.interfaces.SearchViewFuncio
 @CrossOrigin(origins = {"http://localhost:5173", "https://intranet.laflorida.cl"})
 public class FuncionarioController {
 
+
     private final FuncionarioService funcionarioService;
     private final FotoService fotoService;
 
@@ -64,7 +65,6 @@ public class FuncionarioController {
 
     @GetMapping("/administrativos")
     public ResponseEntity<Object> obtenerAdministrativos(@RequestParam Integer rut, @RequestParam Integer ident) {
-
         return ResponseEntity.ok(funcionarioService.resumenAdm(rut, ident));
     }
 
@@ -81,4 +81,10 @@ public class FuncionarioController {
         return ResponseEntity.ok(viewSearch.findByNombre(pattern, pageNumber));
     }
 
+
+    @GetMapping("/search-view-direccion")
+    public ResponseEntity<Object> viewColaboradoresPorDireccion(@RequestParam String pattern,
+            @RequestParam int pageNumber, @RequestParam java.util.List<Long> deptos) {
+        return ResponseEntity.ok(viewSearch.findByNombreEnDepartamentos(pattern, pageNumber, deptos));
+    }
 }

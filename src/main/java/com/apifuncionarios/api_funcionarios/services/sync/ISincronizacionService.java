@@ -7,5 +7,6 @@ import com.apifuncionarios.api_funcionarios.entities.Funcionario;
 public interface ISincronizacionService {
 
     Funcionario sincronizarYActualizarFuncionario(ApiFuncionarioResponse response);
-    
+
+    Funcionario sincronizarYActualizarFuncionario(ApiFuncionarioResponse response, java.time.Instant inicioConsulta);
 }

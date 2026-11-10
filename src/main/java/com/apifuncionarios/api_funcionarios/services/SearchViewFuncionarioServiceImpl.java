@@ -26,7 +26,7 @@ public class SearchViewFuncionarioServiceImpl implements SearchViewFuncionarioSe
     @SuppressWarnings("SpringDataRepositoryMethodParametersInspection")
     public SearchViewFuncionarioResponse findByNombre(String pattern, int pageNumber) {
 
-        Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by(SearchnNombreDto::nombreCompleto).ascending());
+        Pageable pageable = PageRequest.of(pageNumber, 10, Sort.by("nombre_completo").ascending());
 
         Page<SearchnNombreDto> pageResutl = funcionarioRepository.findByNombre(pattern, pageable);
 
@@ -44,4 +44,20 @@ public class SearchViewFuncionarioServiceImpl implements SearchViewFuncionarioSe
 
     }
 
+
+    @Override
+    public SearchViewFuncionarioResponse findByNombreEnDepartamentos(String pattern, int pageNumber, List<Long> deptos) {
+        if (deptos == null || deptos.isEmpty()) {
+            throw new IllegalArgumentException("Debe indicar los departamentos de la dirección.");
+        }
+        var page = funcionarioRepository.findByNombreEnDepartamentos(pattern, deptos,
+                PageRequest.of(pageNumber, 10, Sort.by("nombre_completo").ascending().and(Sort.by("rut"))));
+        var dto = new SearchViewFuncionarioResponse();
+        dto.setCurrentPage(page.getNumber());
+        dto.setTotalItems(Math.toIntExact(page.getTotalElements()));
+        dto.setTotalPages(page.getTotalPages());
+        dto.setSize(page.getTotalElements());
+        dto.setFuncionarios(page.getContent());
+        return dto;
+    }
 }
