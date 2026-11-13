@@ -13,6 +13,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 import com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse;
+import com.apifuncionarios.api_funcionarios.dto.FuncionarioContratoResponse;
 import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;
 import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
 import com.apifuncionarios.api_funcionarios.services.interfaces.ApiFuncionarioService;
@@ -76,9 +77,14 @@ public class ApiFuncionarioServiceImpl implements ApiFuncionarioService {
     }
 
     @Override
-    public List<ApiFuncionarioResponse> obtenerListDetalleColaborador(Integer rut) {
-        return consultar("lista", buildUri("/api/funcionario/{rut}/list", rut),
-                new org.springframework.core.ParameterizedTypeReference<List<ApiFuncionarioResponse>>() {});
+    public List<FuncionarioContratoResponse> obtenerListDetalleColaborador(Integer rut) {
+        if (rut == null || rut <= 0) {
+            throw new com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException(
+                    "El RUT del funcionario debe ser un número positivo");
+        }
+        List<FuncionarioContratoResponse> contratos = consultar("lista", buildUri("/api/funcionario/{rut}/list", rut),
+                new org.springframework.core.ParameterizedTypeReference<List<FuncionarioContratoResponse>>() {});
+        return contratos == null ? List.of() : contratos;
     }
 
     private <T> T consultar(String operation, URI uri, org.springframework.core.ParameterizedTypeReference<T> type) {

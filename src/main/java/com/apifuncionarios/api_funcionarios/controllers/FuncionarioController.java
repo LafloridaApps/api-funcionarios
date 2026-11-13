@@ -1,6 +1,7 @@
 package com.apifuncionarios.api_funcionarios.controllers;
 
 import java.util.Map;
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
+import com.apifuncionarios.api_funcionarios.dto.FuncionarioContratoResponse;
+import com.apifuncionarios.api_funcionarios.services.interfaces.ApiFuncionarioService;
 import com.apifuncionarios.api_funcionarios.services.interfaces.FotoService;
 import com.apifuncionarios.api_funcionarios.services.interfaces.FuncionarioService;
 import com.apifuncionarios.api_funcionarios.services.interfaces.SearchFuncionarioService;
@@ -24,6 +27,7 @@ public class FuncionarioController {
 
 
     private final FuncionarioService funcionarioService;
+    private final ApiFuncionarioService apiFuncionarioService;
     private final FotoService fotoService;
 
     private final SearchFuncionarioService searchFuncionarioService;
@@ -31,7 +35,9 @@ public class FuncionarioController {
 
     public FuncionarioController(FuncionarioService funcionarioService,
             SearchFuncionarioService searchFuncionarioService,
-            FotoService fotoService, SearchViewFuncionarioService viewSearch) {
+            FotoService fotoService, SearchViewFuncionarioService viewSearch,
+            ApiFuncionarioService apiFuncionarioService) {
+        this.apiFuncionarioService = apiFuncionarioService;
         this.funcionarioService = funcionarioService;
         this.searchFuncionarioService = searchFuncionarioService;
         this.fotoService = fotoService;
@@ -42,6 +48,11 @@ public class FuncionarioController {
     public ResponseEntity<Object> obtenerDetalleColaborador(@RequestParam Integer rut) {
 
         return ResponseEntity.ok(funcionarioService.getFuncionarioInfo(rut));
+    }
+
+    @GetMapping("/{rut}/list")
+    public ResponseEntity<List<FuncionarioContratoResponse>> obtenerContratos(@PathVariable Integer rut) {
+        return ResponseEntity.ok(apiFuncionarioService.obtenerListDetalleColaborador(rut));
     }
 
     @GetMapping("/search")

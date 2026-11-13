@@ -53,16 +53,18 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         }
         RuntimeException failure = null;
         String phase = "external_fetch";
+        ApiFuncionarioResponse origenValidado = null;
         try {
             java.time.Instant inicioConsulta = java.time.Instant.now();
             ApiFuncionarioResponse apiResponse = apiFuncionarioService.obtenerDetalleColaborador(rut);
             if (apiResponse != null) {
                 phase = "identity_validation";
                 validarIdentidadExterna(rut, apiResponse);
+                origenValidado = apiResponse;
                 phase = "synchronization";
                 Funcionario funcionario = sincronizacionService.sincronizarYActualizarFuncionario(apiResponse, inicioConsulta);
                 phase = "response_build";
-                return buildFuncionarioResponse(funcionario, apiResponse.getFoto());
+                return validarDepartamentoRespuesta(buildFuncionarioResponse(funcionario, apiResponse.getFoto()), apiResponse);
             }
         } catch (RuntimeException error) {
             failure = error;
@@ -79,7 +81,56 @@ public class FuncionarioServiceImpl implements FuncionarioService {
             logger.error("event=funcionario_processing_failed phase={} recovered=true", phase, failure);
         }
         logger.info("event=local_fallback_used reason={}", failure == null ? "external_empty" : phase);
-        return buildFuncionarioResponse(funcionario, null);
+        FuncionarioResponse respaldo = buildFuncionarioResponse(funcionario, null);
+        if (respaldo != null) {
+            respaldo.setConfiguracionDepartamento(
+                    new com.apifuncionarios.api_funcionarios.dto.ConfiguracionDepartamento(
+                            "NO_VERIFICADO",
+                            origenValidado == null ? null : origenValidado.getCodDeptoExt(),
+                            origenValidado == null ? null : origenValidado.getDepartamento(),
+                            respaldo.getCodDepto(), null));
+            ocultarDepartamentoNoValidado(respaldo);
+        }
+        return respaldo;
+    }
+
+    private FuncionarioResponse validarDepartamentoRespuesta(FuncionarioResponse respuesta, ApiFuncionarioResponse origen) {
+        if (respuesta == null) return null;
+        String codigo = origen.getCodDeptoExt();
+        String estado = "SIN_CODIGO_ORIGEN";
+        Long idInterno = respuesta.getCodDepto();
+        Long idAsociado = null;
+        if (codigo != null && !codigo.isBlank()) {
+            try {
+                DepartamentoResponse departamento = apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx(codigo);
+                idAsociado = departamento == null ? null : departamento.getId();
+                estado = estadoAsociacion(departamento, idInterno);
+            } catch (RuntimeException error) {
+                estado = "SERVICIO_NO_DISPONIBLE";
+                logger.warn("event=department_validation_unavailable error_type={}", error.getClass().getSimpleName());
+            }
+        }
+        respuesta.setConfiguracionDepartamento(new com.apifuncionarios.api_funcionarios.dto.ConfiguracionDepartamento(
+                estado, codigo, origen.getDepartamento(), idInterno, idAsociado));
+        if (!"VALIDADO".equals(estado)) {
+            ocultarDepartamentoNoValidado(respuesta);
+        }
+        return respuesta;
+    }
+
+    private String estadoAsociacion(DepartamentoResponse departamento, Long idInterno) {
+        if (departamento == null) return "SIN_ASOCIACION";
+        Long idAsociado = departamento.getId();
+        if (idAsociado == null || idAsociado <= 0) return "ASOCIACION_INVALIDA";
+        if (idInterno == null) return "SIN_ID_INTERNO";
+        return idAsociado.equals(idInterno) ? "VALIDADO" : "ASOCIACION_INCONSISTENTE";
+    }
+
+    private void ocultarDepartamentoNoValidado(FuncionarioResponse respuesta) {
+        respuesta.setCodDepto(null);
+        respuesta.setDepartamento("");
+        respuesta.setNombreJefe("");
+        respuesta.setCodDeptoJefe(null);
     }
 
     private void validarIdentidadExterna(Integer rut, ApiFuncionarioResponse response) {

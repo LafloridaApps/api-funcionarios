@@ -4,6 +4,13 @@ import java.time.LocalDate;
 
 public class FuncionarioResponse {
 
+    private ConfiguracionDepartamento configuracionDepartamento;
+
+    public ConfiguracionDepartamento getConfiguracionDepartamento() { return configuracionDepartamento; }
+    public void setConfiguracionDepartamento(ConfiguracionDepartamento configuracion) {
+        this.configuracionDepartamento = configuracion;
+    }
+
     private Integer rut;
     private String nombre;
     private String apellidoPaterno;

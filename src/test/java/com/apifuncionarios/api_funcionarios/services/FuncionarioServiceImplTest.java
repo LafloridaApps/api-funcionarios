@@ -197,4 +197,82 @@ class FuncionarioServiceImplTest {
         verifyNoInteractions(sincronizacionService);
         verify(funcionarioMapper).toResponseDto(local, null, null, null);
     }
+
+    @Test
+    void departamentoSinAsociacionSeInformaAunqueExistaDepartamentoAnterior() {
+        prepararValidacionDepartamento(7L);
+        var respuesta = service.getFuncionarioInfo(123);
+        assertEquals("SIN_ASOCIACION", respuesta.getConfiguracionDepartamento().estado());
+        assertEquals("17100801", respuesta.getConfiguracionDepartamento().codigoExterno());
+        assertFalse(respuesta.getConfiguracionDepartamento().permiteSolicitudes());
+        assertNull(respuesta.getCodDepto());
+        assertEquals(7L, respuesta.getConfiguracionDepartamento().idDeptoInterno());
+        assertNull(respuesta.getConfiguracionDepartamento().idDeptoAsociado());
+    }
+
+    @Test
+    void caidaDeDepartamentosNoSeConfundeConAsociacionFaltante() {
+        prepararValidacionDepartamento(null);
+        when(apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx("17100801"))
+                .thenThrow(new com.apifuncionarios.api_funcionarios.exceptions.ExternalServiceException(503, null));
+        assertEquals("SERVICIO_NO_DISPONIBLE", service.getFuncionarioInfo(123).getConfiguracionDepartamento().estado());
+    }
+
+    @Test
+    void asociacionCorregidaHabilitaSolicitudes() {
+        prepararValidacionDepartamento(190L);
+        when(apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx("17100801"))
+                .thenReturn(new DepartamentoResponse(190L, "Departamento correcto", null));
+        assertTrue(service.getFuncionarioInfo(123).getConfiguracionDepartamento().permiteSolicitudes());
+    }
+
+    @Test
+    void idInternoNuloSeDistingueDeAsociacionFaltante() {
+        prepararValidacionDepartamento(null);
+        when(apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx("17100801"))
+                .thenReturn(new DepartamentoResponse(190L, "Departamento correcto", null));
+        var diagnostico = service.getFuncionarioInfo(123).getConfiguracionDepartamento();
+        assertEquals("SIN_ID_INTERNO", diagnostico.estado());
+        assertNull(diagnostico.idDeptoInterno());
+        assertEquals(190L, diagnostico.idDeptoAsociado());
+    }
+
+    @Test
+    void diferenciaDeIdsSeInformaConAmbosValores() {
+        prepararValidacionDepartamento(7L);
+        when(apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx("17100801"))
+                .thenReturn(new DepartamentoResponse(190L, "Departamento correcto", null));
+        var diagnostico = service.getFuncionarioInfo(123).getConfiguracionDepartamento();
+        assertEquals("ASOCIACION_INCONSISTENTE", diagnostico.estado());
+        assertEquals(7L, diagnostico.idDeptoInterno());
+        assertEquals(190L, diagnostico.idDeptoAsociado());
+    }
+
+    @Test
+    void respaldoConservaDepartamentoSmcSiFallaLaSincronizacion() {
+        var origen = prepararValidacionDepartamento(7L);
+        when(sincronizacionService.sincronizarYActualizarFuncionario(eq(origen), any(java.time.Instant.class)))
+                .thenThrow(new com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException("Fallo de sincronización"));
+        var local = buildFuncionario(123, 7L);
+        when(funcionarioRepository.findByRut(123)).thenReturn(Optional.of(local));
+        when(funcionarioMapper.toResponseDto(eq(local), any(), any(), any()))
+                .thenReturn(new com.apifuncionarios.api_funcionarios.dto.FuncionarioResponse.Builder().rut(123).codDepto(7L).build());
+        var diagnostico = service.getFuncionarioInfo(123).getConfiguracionDepartamento();
+        assertEquals("NO_VERIFICADO", diagnostico.estado());
+        assertEquals("Oficina Local de la Niñez", diagnostico.nombreExterno());
+        assertEquals("17100801", diagnostico.codigoExterno());
+    }
+
+    private com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse prepararValidacionDepartamento(Long idDepto) {
+        var origen = new com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse();
+        origen.setRut(123); origen.setVrut("K"); origen.setCodDeptoExt("17100801");
+        origen.setDepartamento("Oficina Local de la Niñez");
+        var local = buildFuncionario(123, idDepto);
+        when(apiFuncionarioService.obtenerDetalleColaborador(123)).thenReturn(origen);
+        when(sincronizacionService.sincronizarYActualizarFuncionario(eq(origen), any(java.time.Instant.class)))
+                .thenReturn(local);
+        var respuesta = new com.apifuncionarios.api_funcionarios.dto.FuncionarioResponse.Builder().rut(123).codDepto(idDepto).build();
+        when(funcionarioMapper.toResponseDto(eq(local), any(), any(), any())).thenReturn(respuesta);
+        return origen;
+    }
 }
