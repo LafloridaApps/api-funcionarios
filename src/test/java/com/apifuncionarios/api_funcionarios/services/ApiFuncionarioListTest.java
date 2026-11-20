@@ -1,6 +1,8 @@
 package com.apifuncionarios.api_funcionarios.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -16,11 +18,15 @@ class ApiFuncionarioListTest {
         var builder = WebClient.builder().exchangeFunction(request -> {
             assertEquals("/api/funcionario/123/list", request.url().getPath());
             return Mono.just(ClientResponse.create(HttpStatus.OK).header("Content-Type", "application/json")
-                    .body("[{\"rut\":123,\"vigente\":true,\"numresolcontr\":\"001/2026\",\"obs_adicional_cont\":\"Observación de contrato\"},"
+                    .body("[{\"rut\":123,\"vigente\":true,\"lincontrato\":7,\"fecharesolcontr\":\"2026-02-12\",\"numresolcontr\":\"001/2026\",\"obs_adicional_cont\":\"Observación de contrato\"},"
                         + "{\"rut\":123,\"vigente\":false,\"numresolcontr\":null,\"obs_adicional_cont\":null}]").build());
         });
         var contratos = new ApiFuncionarioServiceImpl(builder, properties).obtenerListDetalleColaborador(123);
         assertEquals(2, contratos.size());
+        assertEquals(7, contratos.getFirst().linContrato());
+        assertEquals(LocalDate.of(2026, 2, 12), contratos.getFirst().fechaResolContr());
+        assertNull(contratos.getLast().linContrato());
+        assertNull(contratos.getLast().fechaResolContr());
         assertEquals("001/2026", contratos.getFirst().numResolContr());
         assertEquals("Observación de contrato", contratos.getFirst().obsAdicionalCont());
         assertFalse(contratos.getLast().vigente());

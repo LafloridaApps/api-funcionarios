@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse;
 import com.apifuncionarios.api_funcionarios.dto.DepartamentoResponse;
+import com.apifuncionarios.api_funcionarios.dto.FuncionarioContratoResponse;
 import com.apifuncionarios.api_funcionarios.dto.FuncionarioResponse;
 import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;
 import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
@@ -21,6 +22,9 @@ import com.apifuncionarios.api_funcionarios.services.interfaces.FuncionarioServi
 import com.apifuncionarios.api_funcionarios.services.sync.ISincronizacionService;
 import com.apifuncionarios.api_funcionarios.utils.RepositoryUtils;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -93,6 +97,39 @@ public class FuncionarioServiceImpl implements FuncionarioService {
         }
         return respaldo;
     }
+
+    @Override
+    public List<FuncionarioContratoResponse> obtenerContratos(Integer rut) {
+        List<FuncionarioContratoResponse> contratos = apiFuncionarioService.obtenerListDetalleColaborador(rut);
+        Map<String, DepartamentoContrato> departamentos = new HashMap<>();
+        return contratos.stream().map(contrato -> {
+            String codigo = contrato.codDeptoExt();
+            if (codigo == null || codigo.isBlank()) {
+                return contrato.conDepartamento(null, null, null);
+            }
+            DepartamentoContrato departamento = departamentos.computeIfAbsent(codigo.trim(),
+                    codex -> resolverDepartamentoContrato(codex, rut));
+            return contrato.conDepartamento(departamento.codigo(), departamento.jefe(), departamento.codigoJefe());
+        }).toList();
+    }
+
+    private DepartamentoContrato resolverDepartamentoContrato(String codigoExterno, Integer rut) {
+        DepartamentoResponse departamento;
+        try {
+            departamento = apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx(codigoExterno);
+        } catch (ExternalServiceException error) {
+            logger.warn("event=contract_department_unavailable");
+            return new DepartamentoContrato(null, null, null);
+        }
+        if (departamento == null || departamento.getId() == null || departamento.getId() <= 0) {
+            return new DepartamentoContrato(null, null, null);
+        }
+        Funcionario jefe = resolveJefeDepto(departamento, rut);
+        return new DepartamentoContrato(departamento.getId(),
+                jefe == null ? null : jefe.getNombreCompleto(), jefe == null ? null : jefe.getIdDepto());
+    }
+
+    private record DepartamentoContrato(Long codigo, String jefe, Long codigoJefe) {}
 
     private FuncionarioResponse validarDepartamentoRespuesta(FuncionarioResponse respuesta, ApiFuncionarioResponse origen) {
         if (respuesta == null) return null;

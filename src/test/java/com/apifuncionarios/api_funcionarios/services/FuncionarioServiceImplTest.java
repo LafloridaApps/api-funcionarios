@@ -3,6 +3,8 @@ package com.apifuncionarios.api_funcionarios.services;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +17,7 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 import com.apifuncionarios.api_funcionarios.dto.DepartamentoResponse;
+import com.apifuncionarios.api_funcionarios.dto.FuncionarioContratoResponse;
 import com.apifuncionarios.api_funcionarios.entities.Funcionario;
 import com.apifuncionarios.api_funcionarios.mappers.FuncionarioMapper;
 import com.apifuncionarios.api_funcionarios.repositories.FuncionarioRepository;
@@ -52,6 +55,43 @@ class FuncionarioServiceImplTest {
         f.setApellidoPaterno("P");
         f.setApellidoMaterno("M");
         return f;
+    }
+
+    @Test
+    void listadoResuelveJefaturaPorDepartamentoDelContrato() {
+        when(apiFuncionarioService.obtenerListDetalleColaborador(123))
+                .thenReturn(List.of(contrato(1, "001"), contrato(2, "002"), contrato(3, "001 "),
+                        contrato(4, "003")));
+        var departamento = new DepartamentoResponse(10L, "Departamento", 999);
+        var departamentoSinJefe = new DepartamentoResponse(20L, "Otro departamento", null);
+        when(apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx("001")).thenReturn(departamento);
+        when(apiDepartamentoService.obtenerDetalleDepartamentoByCodigoEx("002")).thenReturn(departamentoSinJefe);
+        when(funcionarioRepository.findByRut(999)).thenReturn(Optional.of(buildFuncionario(999, 30L)));
+
+        var contratos = service.obtenerContratos(123);
+
+        assertEquals(List.of(1, 2, 3, 4), contratos.stream().map(FuncionarioContratoResponse::ident).toList());
+        assertEquals(10L, contratos.getFirst().codDepto());
+        assertEquals("Planta", contratos.getFirst().denominacionDominio());
+        assertEquals(1, contratos.getFirst().linContrato());
+        assertEquals(LocalDate.of(2026, 2, 12), contratos.getFirst().fechaResolContr());
+        assertEquals("Nombre P M", contratos.getFirst().jefe());
+        assertEquals(30L, contratos.getFirst().codDeptoJefe());
+        assertEquals(20L, contratos.get(1).codDepto());
+        assertNull(contratos.get(1).jefe());
+        assertNull(contratos.get(1).codDeptoJefe());
+        assertEquals(10L, contratos.get(2).codDepto());
+        assertNull(contratos.getLast().codDepto());
+        assertEquals("003", contratos.getLast().codDeptoExt());
+        verify(apiDepartamentoService).obtenerDetalleDepartamentoByCodigoEx("001");
+        verify(funcionarioRepository).findByRut(999);
+        verifyNoInteractions(sincronizacionService);
+    }
+
+    private FuncionarioContratoResponse contrato(int ident, String codigoExterno) {
+        return new FuncionarioContratoResponse(123, "K", null, null, null, codigoExterno, null,
+                null, null, ident, null, null, null, null, null, false, null, null,
+                null, null, null, null, ident, LocalDate.of(2026, 2, 12), "Planta");
     }
 
     @Test
