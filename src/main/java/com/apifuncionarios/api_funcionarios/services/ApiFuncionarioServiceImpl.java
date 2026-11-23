@@ -17,6 +17,7 @@ import com.apifuncionarios.api_funcionarios.dto.FuncionarioContratoResponse;
 import com.apifuncionarios.api_funcionarios.dto.ResumenAdm;
 import com.apifuncionarios.api_funcionarios.dto.ResumenFeriadoLegal;
 import com.apifuncionarios.api_funcionarios.services.interfaces.ApiFuncionarioService;
+import com.apifuncionarios.api_funcionarios.utils.ExternalApiClient;
 
 import io.netty.channel.ChannelOption;
 import reactor.netty.http.client.HttpClient;
@@ -82,13 +83,14 @@ public class ApiFuncionarioServiceImpl implements ApiFuncionarioService {
             throw new com.apifuncionarios.api_funcionarios.exceptions.FuncionarioException(
                     "El RUT del funcionario debe ser un número positivo");
         }
-        List<FuncionarioContratoResponse> contratos = consultar("lista", buildUri("/api/funcionario/{rut}/list", rut),
-                new org.springframework.core.ParameterizedTypeReference<List<FuncionarioContratoResponse>>() {});
+        URI uri = buildUri("/api/funcionario/{rut}/list", rut);
+        List<FuncionarioContratoResponse> contratos = ExternalApiClient.getList(
+                "funcionarios", "lista", () -> webClient.get().uri(uri), FuncionarioContratoResponse.class);
         return contratos == null ? List.of() : contratos;
     }
 
     private <T> T consultar(String operation, URI uri, org.springframework.core.ParameterizedTypeReference<T> type) {
-        return com.apifuncionarios.api_funcionarios.utils.ExternalApiClient.get(
+        return ExternalApiClient.get(
                 "funcionarios", operation, () -> webClient.get().uri(uri), type);
     }
 }

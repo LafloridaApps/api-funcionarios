@@ -1,6 +1,7 @@
 package com.apifuncionarios.api_funcionarios.services;
 
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.reactive.function.client.ClientResponse;
@@ -10,6 +11,22 @@ import com.apifuncionarios.api_funcionarios.config.ApiProperties;
 import com.apifuncionarios.api_funcionarios.dto.ApiFuncionarioResponse;
 
 class ApiFuncionarioListTest {
+    @Test
+    void listadoDecodificaContratosAunqueElArregloSupereElLimiteDelBuffer() {
+        var properties = new ApiProperties();
+        properties.setFuncionarioSmcUrl("http://smc.test");
+        String contrato = "{\"rut\":123,\"obs_adicional_cont\":\"" + "a".repeat(1024) + "\"}";
+        String body = "[" + String.join(",", Collections.nCopies(300, contrato)) + "]";
+        var builder = WebClient.builder().exchangeFunction(request -> Mono.just(
+                ClientResponse.create(HttpStatus.OK).header("Content-Type", "application/json")
+                        .body(body).build()));
+
+        var contratos = new ApiFuncionarioServiceImpl(builder, properties).obtenerListDetalleColaborador(123);
+
+        assertEquals(300, contratos.size());
+        assertEquals(1024, contratos.getLast().obsAdicionalCont().length());
+    }
+
     @Test
     void listadoConservaCamposNuevosYContratosNoVigentes() {
         var properties = new ApiProperties(); properties.setFuncionarioSmcUrl("http://smc.test");

@@ -1,10 +1,13 @@
 package com.apifuncionarios.api_funcionarios.utils;
 
 import java.time.Duration;
+import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import com.apifuncionarios.api_funcionarios.exceptions.ExternalServiceException;
@@ -16,6 +19,16 @@ public final class ExternalApiClient {
 
     public static <T> T get(String service, String operation,
             Supplier<WebClient.RequestHeadersSpec<?>> request, ParameterizedTypeReference<T> type) {
+        return get(service, operation, request, response -> response.bodyToMono(type));
+    }
+
+    public static <T> List<T> getList(String service, String operation,
+            Supplier<WebClient.RequestHeadersSpec<?>> request, Class<T> elementType) {
+        return get(service, operation, request, response -> response.bodyToFlux(elementType).collectList());
+    }
+
+    private static <T> T get(String service, String operation,
+            Supplier<WebClient.RequestHeadersSpec<?>> request, Function<ClientResponse, Mono<T>> readBody) {
         long start = System.nanoTime();
         int[] status = {0};
         try {
@@ -27,7 +40,7 @@ public final class ExternalApiClient {
                 if (!response.statusCode().is2xxSuccessful()) {
                     return response.releaseBody().then(Mono.<T>error(new ExternalServiceException(status[0], null)));
                 }
-                return response.bodyToMono(type);
+                return readBody.apply(response);
             }).timeout(Duration.ofSeconds(15)).block();
             logger.debug("event=external_completed service={} operation={} status={} result={} duration_ms={}",
                     service, operation, status[0], result == null ? "empty" : "ok", elapsed(start));
